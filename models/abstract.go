@@ -8,27 +8,27 @@ import (
 
 type AbstractModel struct {
 	Object interface{}
-	db *sql.DB
+	DB *sql.DB
 }
 
 func (a AbstractModel) All(table string, pagination Pagination) (*sql.Rows, error) {
-	rows, err := a.db.Query(mountSql(table, pagination))
-	a.db.Close()
+	rows, err := a.DB.Query(mountSql(table, pagination))
+	a.DB.Close()
 	return rows, err
 }
 
 func (a AbstractModel) FindByKey(table string, condictions []string, keys []string, operations []string, values []string) (*sql.Rows, error) {
-	rows, err := a.db.Query(mountQuery(table, condictions, keys, operations, values))
-	a.db.Close()
+	rows, err := a.DB.Query(mountQuery(table, condictions, keys, operations, values))
+	a.DB.Close()
 	return rows, err
 }
 
 func (a AbstractModel) Count(table string) (int, error) {
-	rows, err := a.db.Query("SELECT COUNT(*) FROM " + table)
+	rows, err := a.DB.Query("SELECT COUNT(*) FROM " + table)
 	if err != nil {
 		return 0, err
 	}
-	a.db.Close()
+	a.DB.Close()
 
 	var count int
 	for rows.Next() {
@@ -75,8 +75,8 @@ func (a AbstractModel) Create(table string) (sql.Result, error) {
 		}
 	}
 
-	result, err := a.db.Exec(insert)
-	a.db.Close()
+	result, err := a.DB.Exec(insert)
+	a.DB.Close()
 	return result, err
 }
 
@@ -113,8 +113,8 @@ func (a AbstractModel) Update(table string, keys []string) (sql.Result, error) {
 		}
 	}
 
-	result, err := a.db.Exec(update)
-	a.db.Close()
+	result, err := a.DB.Exec(update)
+	a.DB.Close()
 	return result, err
 }
 
@@ -154,8 +154,8 @@ func (a AbstractModel) Delete(table string, keys []string, values []string) (sql
 		}
 	}
 
-	result, err := a.db.Exec(delete)
-	a.db.Close()
+	result, err := a.DB.Exec(delete)
+	a.DB.Close()
 	return result, err
 }
 
