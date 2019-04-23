@@ -8,7 +8,7 @@ import (
 
 type AbstractModel struct {
 	Object interface{}
-	DB *sql.DB
+	DB     *sql.DB
 }
 
 func (a AbstractModel) All(table string, pagination Pagination) (*sql.Rows, error) {
@@ -38,7 +38,25 @@ func (a AbstractModel) Count(table string) (int, error) {
 		}
 	}
 
-	return count + 1, nil
+	return count, nil
+}
+
+func (a AbstractModel) NextCode(table string, pimaryKey string) (int, error) {
+	rows, err := a.DB.Query("SELECT MAX(" + pimaryKey + ") FROM " + table)
+	if err != nil {
+		return 0, err
+	}
+	a.DB.Close()
+
+	var max int
+	for rows.Next() {
+		err = rows.Scan(&max)
+		if err != nil {
+			fmt.Printf(err.Error())
+		}
+	}
+
+	return max + 1, nil
 }
 
 func (a AbstractModel) Create(table string) (sql.Result, error) {
