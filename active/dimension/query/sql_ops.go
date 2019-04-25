@@ -8,7 +8,7 @@ import (
 )
 
 type SQLOps struct {
-	composition Composition
+	composition CompositionOps
 	object      interface{}
 	objectArray interface{}
 	db          *sql.DB
@@ -16,7 +16,7 @@ type SQLOps struct {
 
 func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB) *SQLOps {
 	sqlOps := SQLOps{}
-	sqlOps.composition = *NewComposition(object)
+	sqlOps.composition = *NewCompositionOps(object)
 	sqlOps.object = object
 	sqlOps.objectArray = objectArray
 	sqlOps.db = db
@@ -78,4 +78,14 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	}
 
 	return err
+}
+
+func (s *SQLOps) Insert() error {
+	query, queryValues := s.composition.Insert()
+
+	fmt.Println("QUERY:", query)
+	fmt.Println("VALUES:", queryValues)
+
+
+	return nil
 }

@@ -1,4 +1,4 @@
-package dimension
+package abstract
 
 import (
 	"database/sql"
@@ -9,7 +9,7 @@ type AbstractOps struct {
 	SqlOps      query.SQLOps
 }
 
-func (d *AbstractOps) prepare(object interface{}, objectArray interface{}, db *sql.DB) {
+func (d *AbstractOps) Prepare(object interface{}, objectArray interface{}, db *sql.DB) {
 	d.SqlOps = *query.NewSQLOps(object, objectArray, db)
 }
 
@@ -19,4 +19,8 @@ func (d *AbstractOps) Find(values ...interface{}) error {
 
 func (d *AbstractOps) Where(values ...interface{}) error {
 	return d.SqlOps.Where(values...)
+}
+
+func (d *AbstractOps) Save(values ...interface{}) error {
+	return d.SqlOps.Insert()
 }

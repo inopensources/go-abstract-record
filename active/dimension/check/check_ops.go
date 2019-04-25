@@ -1,4 +1,4 @@
-package dimension
+package check
 
 import (
 	"errors"
@@ -6,10 +6,10 @@ import (
 	"github.com/infarmasistemas/goorm/active/json_ops"
 )
 
-type Check struct {
+type CheckOps struct {
 }
 
-func (a *Check) CheckAndExecute(function func(finalValues ...interface{}) error, values ...interface{}) error {
+func (a *CheckOps) CheckAndExecute(function func(finalValues ...interface{}) error, values ...interface{}) error {
 
 	// If len == 1, then it's either JSON or pure SQL
 	if len(values) == 1 {
