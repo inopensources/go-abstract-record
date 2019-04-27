@@ -86,6 +86,12 @@ func (s *SQLOps) Insert() error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
+	result, err := s.db.Exec(query, queryValues...)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(result.LastInsertId())
 
 	return nil
 }

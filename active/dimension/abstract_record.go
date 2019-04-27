@@ -20,6 +20,10 @@ func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB) 
 	return &abstract
 }
 
+func (e *AbstractRecord) All() error {
+	return e.abstractOps.All()
+}
+
 func (e *AbstractRecord) Find(values ...interface{}) error {
 	return e.checkOps.CheckAndExecute(e.abstractOps.Find, values...)
 }

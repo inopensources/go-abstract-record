@@ -14,7 +14,7 @@ func (i *InstanceOps) Prepare(object interface{}, objectArray interface{}) {
 	i.objectArray = objectArray
 }
 
-
+// TODO: Code a way to instantiate objects using new
 func (i *InstanceOps) New(values ...interface{}) error {
 	fmt.Print(values)
 	return nil

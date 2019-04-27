@@ -13,6 +13,10 @@ func (d *AbstractOps) Prepare(object interface{}, objectArray interface{}, db *s
 	d.SqlOps = *query.NewSQLOps(object, objectArray, db)
 }
 
+func (d *AbstractOps) All() error {
+	return d.SqlOps.Where()
+}
+
 func (d *AbstractOps) Find(values ...interface{}) error {
 	return d.SqlOps.Select(values...)
 }

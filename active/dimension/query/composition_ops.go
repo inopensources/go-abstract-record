@@ -28,8 +28,12 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 	sb.WriteString("SELECT ")
 	sb.WriteString(c.attributesAsSQL())
 	sb.WriteString(fmt.Sprintf("FROM dmd.dbo.%s ", c.table))
-	sb.WriteString("WHERE ")
-	sb.WriteString(c.conditionsAsSQL(values...))
+
+	if len(values) > 0 {
+		sb.WriteString("WHERE ")
+		sb.WriteString(c.conditionsAsSQL(values...))
+	}
+
 	sb.WriteString(";")
 
 	return sb.String(), c.queryValues
