@@ -194,7 +194,7 @@ func mountSql(a AbstractModel, table string, pagination Pagination) string {
 		}
 	}
 
-	sql = fmt.Sprint(sql, " ", table)
+	sql = fmt.Sprint(sql, " FROM ", table)
 
 	if pagination.Where != "" {
 		sql = fmt.Sprint(sql, " ", pagination.Where)
