@@ -6,13 +6,15 @@ import (
 )
 
 type Parser struct {
-	body         string
-	parsedBody   map[string]interface{}
-	bodyAsValues []interface{}
+	body            string
+	parsedBody      map[string]interface{}
+	parsedBodyArray []map[string]interface{}
+	bodyAsValues    []interface{}
+	bodyArrayAsValues [][]interface{}
 }
 
 func New(json interface{}) *Parser {
-	return &Parser{fmt.Sprintf("%s", json), nil, nil}
+	return &Parser{fmt.Sprintf("%s", json), nil, nil, nil, nil}
 }
 
 func (j *Parser) GetBodyAsValues() ([]interface{}, error) {
@@ -23,6 +25,16 @@ func (j *Parser) GetBodyAsValues() ([]interface{}, error) {
 	}
 
 	return j.bodyAsValues, err
+}
+
+func (j *Parser) GetBodyArrayAsValues() ([][]interface{}, error) {
+
+	err := j.parseBodyToValues()
+	if err != nil {
+		return nil, err
+	}
+
+	return j.bodyArrayAsValues, err
 }
 
 func (j *Parser) parseBodyToValues() error {
@@ -42,22 +54,53 @@ func (j *Parser) IsJSON() bool {
 	return json.Unmarshal([]byte(j.body), &js) == nil
 }
 
+func (j *Parser) IsArray() bool {
+	var js []interface{}
+	json.Unmarshal([]byte(j.body), &js)
+
+	return len(js) > 1
+}
+
 func (j *Parser) bodyToMap() error {
-	bodyAsMap := make(map[string]interface{})
+	var err error
+	if j.IsArray() {
+		var bodyAsMapArray []map[string]interface{}
 
-	err := json.Unmarshal([]byte(j.body), &bodyAsMap)
-	if err != nil {
-		return err
+		err = json.Unmarshal([]byte(j.body), &bodyAsMapArray)
+		if err != nil {
+			return err
+		}
+
+		j.parsedBodyArray = bodyAsMapArray
+	} else {
+		var bodyAsMap map[string]interface{}
+
+		err = json.Unmarshal([]byte(j.body), &bodyAsMap)
+		if err != nil {
+			return err
+		}
+
+		j.parsedBody = bodyAsMap
 	}
-
-	j.parsedBody = bodyAsMap
 
 	return err
 }
 
 func (j *Parser) mapToValues() {
-	for key, value := range j.parsedBody {
-		j.bodyAsValues = append(j.bodyAsValues, key)
-		j.bodyAsValues = append(j.bodyAsValues, value)
+	if j.IsArray() {
+		for _, parsedBody := range j.parsedBodyArray {
+			var x []interface{}
+			for key, value := range parsedBody {
+				x = append(x, key)
+				x = append(x, value)
+			}
+
+			j.bodyArrayAsValues = append(j.bodyArrayAsValues, x)
+		}
+	} else {
+		for key, value := range j.parsedBody {
+			j.bodyAsValues = append(j.bodyAsValues, key)
+			j.bodyAsValues = append(j.bodyAsValues, value)
+		}
 	}
 }

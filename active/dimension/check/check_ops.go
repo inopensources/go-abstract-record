@@ -15,6 +15,8 @@ func (a *CheckOps) CheckAndExecute(function func(finalValues ...interface{}) err
 	if len(values) == 1 {
 		// If a JSON is coming in...
 		if json_ops.New(values[0]).IsJSON() {
+			//Check if JSON contains more than one object
+
 			finalValues, err := json_ops.New(values[0]).GetBodyAsValues()
 			if err != nil {
 				return err
@@ -29,4 +31,22 @@ func (a *CheckOps) CheckAndExecute(function func(finalValues ...interface{}) err
 	}
 
 	return function(values...)
+}
+
+func (a *CheckOps) TreatEntry(functionSingle func(json []byte) error, functionMultiple func(json []byte) error, values ...interface{}) error {
+	if len(values) == 1 {
+		if json_ops.New(values[0]).IsJSON() {
+
+			if json_ops.New(values[0]).IsArray() {
+				//JSON is an array, therefore I need to write data to an array
+				return functionMultiple([]byte(fmt.Sprintf("%s", values[0])))
+			}
+
+			return functionSingle([]byte(fmt.Sprintf("%s", values[0])))
+		}
+
+		return errors.New(fmt.Sprintf("Can't deal with pure sql %s", values))
+	}
+
+	return functionSingle([]byte(fmt.Sprintf("%s", values[0])))
 }
