@@ -39,3 +39,8 @@ func MountPagination(ctx iris.Context) Pagination {
 
 	return p
 }
+
+type All struct {
+	Data []interface{}
+	Count int
+}
