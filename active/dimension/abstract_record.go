@@ -2,9 +2,9 @@ package dimension
 
 import (
 	"database/sql"
-	"github.com/infarmasistemas/goorm/active/dimension/abstract"
-	"github.com/infarmasistemas/goorm/active/dimension/check"
-	"github.com/infarmasistemas/goorm/active/dimension/instance"
+	"github.com/infarmasistemas/go-abstract-record/active/dimension/abstract"
+	"github.com/infarmasistemas/go-abstract-record/active/dimension/check"
+	"github.com/infarmasistemas/go-abstract-record/active/dimension/instance"
 )
 
 type AbstractRecord struct {

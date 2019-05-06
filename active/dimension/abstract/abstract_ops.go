@@ -2,7 +2,7 @@ package abstract
 
 import (
 	"database/sql"
-	"github.com/infarmasistemas/goorm/active/dimension/query"
+	"github.com/infarmasistemas/go-abstract-record/active/dimension/query"
 )
 
 type AbstractOps struct {

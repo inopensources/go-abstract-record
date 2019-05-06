@@ -3,7 +3,7 @@ package check
 import (
 	"errors"
 	"fmt"
-	"github.com/infarmasistemas/goorm/active/json_ops"
+	"github.com/infarmasistemas/go-abstract-record/active/json_ops"
 )
 
 type CheckOps struct {

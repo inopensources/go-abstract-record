@@ -12,7 +12,7 @@ type AbstractModel struct {
 }
 
 func (a AbstractModel) All(table string, pagination Pagination) (*sql.Rows, error) {
-	rows, err := a.DB.Query(mountSql(table, pagination))
+	rows, err := a.DB.Query(mountSql(a, table, pagination))
 	a.DB.Close()
 	return rows, err
 }
@@ -177,8 +177,25 @@ func (a AbstractModel) Delete(table string, keys []string, values []string) (sql
 	return result, err
 }
 
-func mountSql(table string, pagination Pagination) string {
-	sql := fmt.Sprint(" SELECT * FROM ", table)
+func mountSql(a AbstractModel, table string, pagination Pagination) string {
+	sql := fmt.Sprint(" SELECT  ")
+
+	elements := reflect.ValueOf(a.Object).Elem()
+	typeOfT := elements.Type()
+	t := reflect.TypeOf(a.Object)
+
+	for i := 0; i < elements.NumField(); i++ {
+		ff, _ := t.Elem().FieldByName(typeOfT.Field(i).Name)
+
+		if (i + 1) == elements.NumField() { // last field
+			sql = fmt.Sprint(sql, ff.Tag)
+		} else {
+			sql = fmt.Sprint(sql, ff.Tag, ", ")
+		}
+	}
+
+	sql = fmt.Sprint(sql, " FROM ", table)
+
 	if pagination.Where != "" {
 		sql = fmt.Sprint(sql, " ", pagination.Where)
 	}
