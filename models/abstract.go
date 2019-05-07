@@ -219,7 +219,24 @@ func mountSql(a AbstractModel, table string, pagination Pagination) string {
 conditions tem que ser sempre um vetor menor que os demais, pois a primeira posicao sera WHERE
 */
 func mountQuery(table string, conditions []string, keys []string, operations []string, values []string) string {
-	sql := fmt.Sprint(" SELECT * FROM ", table)
+	sql := fmt.Sprint(" SELECT  ")
+
+	elements := reflect.ValueOf(a.Object).Elem()
+	typeOfT := elements.Type()
+	t := reflect.TypeOf(a.Object)
+
+	for i := 0; i < elements.NumField(); i++ {
+		ff, _ := t.Elem().FieldByName(typeOfT.Field(i).Name)
+
+		if (i + 1) == elements.NumField() { // last field
+			sql = fmt.Sprint(sql, ff.Tag)
+		} else {
+			sql = fmt.Sprint(sql, ff.Tag, ", ")
+		}
+	}
+
+	sql = fmt.Sprint(sql, " FROM ", table)
+
 	for i := 0; i < len(keys); i++ {
 		if i == 0 {
 			sql = fmt.Sprint(sql, " WHERE ", keys[i], " ", operations[i], " ", values[i])
