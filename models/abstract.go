@@ -18,7 +18,7 @@ func (a AbstractModel) All(table string, pagination Pagination) (*sql.Rows, erro
 }
 
 func (a AbstractModel) FindByKey(table string, conditions []string, keys []string, operations []string, values []string) (*sql.Rows, error) {
-	rows, err := a.DB.Query(mountQuery(table, conditions, keys, operations, values))
+	rows, err := a.DB.Query(mountQuery(a, table, conditions, keys, operations, values))
 	a.DB.Close()
 	return rows, err
 }
@@ -218,7 +218,7 @@ func mountSql(a AbstractModel, table string, pagination Pagination) string {
 /**
 conditions tem que ser sempre um vetor menor que os demais, pois a primeira posicao sera WHERE
 */
-func mountQuery(table string, conditions []string, keys []string, operations []string, values []string) string {
+func mountQuery(a AbstractModel, table string, conditions []string, keys []string, operations []string, values []string) string {
 	sql := fmt.Sprint(" SELECT  ")
 
 	elements := reflect.ValueOf(a.Object).Elem()
