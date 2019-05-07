@@ -1,7 +1,7 @@
 package instance
 
 import (
-	"fmt"
+	json2 "encoding/json"
 )
 
 type InstanceOps struct {
@@ -15,11 +15,10 @@ func (i *InstanceOps) Prepare(object interface{}, objectArray interface{}) {
 }
 
 // TODO: Code a way to instantiate objects using new
-func (i *InstanceOps) New(values ...interface{}) error {
-	fmt.Print(values)
-	return nil
+func (i *InstanceOps) NewSingle(json []byte) error {
+	return json2.Unmarshal(json, &i.object)
 }
 
-func defineAttributes() {
-
+func (i *InstanceOps) NewArray(json []byte) error {
+	return json2.Unmarshal(json, &i.objectArray)
 }

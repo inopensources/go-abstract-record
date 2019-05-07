@@ -33,7 +33,7 @@ func (e *AbstractRecord) Where(values ...interface{}) error {
 }
 
 func (e *AbstractRecord) New(values ...interface{}) error {
-	return  e.checkOps.CheckAndExecute(e.instanceOps.New, values...)
+	return  e.checkOps.TreatEntry(e.instanceOps.NewSingle, e.instanceOps.NewArray, values...)
 }
 
 func (e *AbstractRecord) Save() error {
