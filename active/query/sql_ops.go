@@ -9,17 +9,17 @@ import (
 
 type SQLOps struct {
 	composition CompositionOps
-	object      interface{}
-	objectArray interface{}
-	db          *sql.DB
+	Object      interface{}
+	ObjectArray interface{}
+	Db          *sql.DB
 }
 
 func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraFuncs ...func() string) *SQLOps {
 	sqlOps := SQLOps{}
 	sqlOps.composition = *NewCompositionOps(object, extraFuncs...)
-	sqlOps.object = object
-	sqlOps.objectArray = objectArray
-	sqlOps.db = db
+	sqlOps.Object = object
+	sqlOps.ObjectArray = objectArray
+	sqlOps.Db = db
 
 	return &sqlOps
 }
@@ -30,7 +30,7 @@ func (s *SQLOps) Select(values ...interface{}) error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	rows, err := s.db.Query(query, queryValues...)
+	rows, err := s.Db.Query(query, queryValues...)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	rows, err := s.db.Query(query, queryValues...)
+	rows, err := s.Db.Query(query, queryValues...)
 	if err != nil {
 		return err
 	}
@@ -70,9 +70,9 @@ func (s *SQLOps) Where(values ...interface{}) error {
 			fmt.Println(err)
 		}
 
-		valuePtr := reflect.ValueOf(s.objectArray)
+		valuePtr := reflect.ValueOf(s.ObjectArray)
 		value := valuePtr.Elem()
-		value.Set(reflect.Append(value, reflect.ValueOf(s.object).Elem()))
+		value.Set(reflect.Append(value, reflect.ValueOf(s.Object).Elem()))
 
 		resultCount++
 	}
@@ -86,7 +86,7 @@ func (s *SQLOps) Insert() error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.db.Exec(query, queryValues...)
+	result, err := s.Db.Exec(query, queryValues...)
 	if err != nil {
 		return err
 	}
@@ -94,4 +94,8 @@ func (s *SQLOps) Insert() error {
 	fmt.Println(result.LastInsertId())
 
 	return nil
+}
+
+func (s *SQLOps) GetComposition() *CompositionOps {
+	return &s.composition
 }

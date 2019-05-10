@@ -28,3 +28,7 @@ func (d *AbstractOps) Where(values ...interface{}) error {
 func (d *AbstractOps) Save(values ...interface{}) error {
 	return d.SqlOps.Insert()
 }
+
+func (d *AbstractOps) GetSqlOps (extraFuncs func() string) {
+	d.SqlOps.GetComposition().AddFunctionToStack(extraFuncs)
+}

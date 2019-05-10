@@ -1,6 +1,8 @@
 package tail_funcs
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func PaginationFunc(pk string, offset, pageSize int) func() string {
 	return NewPagination(pk, offset, pageSize).Paginate

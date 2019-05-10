@@ -150,3 +150,7 @@ func (c *CompositionOps) quotedOrNot(value interface{}) string {
 	}
 	return ""
 }
+
+func (c *CompositionOps) AddFunctionToStack(anotherFunc func() string) {
+	c.extraFuncs = append(c.extraFuncs, anotherFunc)
+}
