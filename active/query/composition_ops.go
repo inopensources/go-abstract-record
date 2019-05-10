@@ -12,53 +12,46 @@ type CompositionOps struct {
 	attributesValues []interface{}
 	pointerList      []interface{}
 	queryValues      []interface{}
-	extraFuncs  	 []func() string
+	queriesOps       QueriesOps
 }
 
-func NewCompositionOps(object interface{}, extraFuncs ...func() string) *CompositionOps {
+func NewCompositionOps(object interface{}) *CompositionOps {
 	newCompositionOps := CompositionOps{}
 	newCompositionOps.discoverTable(object)
 	newCompositionOps.discoverAttributesAndpointerList(object)
-	newCompositionOps.extraFuncs = extraFuncs
 
 	return &newCompositionOps
 }
 
 func (c *CompositionOps) Select(values ...interface{}) (query string, pointerList []interface{}) {
-	var sb strings.Builder
-
-	sb.WriteString("SELECT ")
-	sb.WriteString(c.attributesAsSQL())
-	sb.WriteString(fmt.Sprintf("FROM dmd.dbo.%s ", c.table))
+	c.queriesOps.AddPreQuery("SELECT ")
+	c.queriesOps.AddPreQuery(c.attributesAsSQL())
+	c.queriesOps.AddPreQuery(fmt.Sprintf("FROM dmd.dbo.%s ", c.table))
 
 	if len(values) > 0 {
-		sb.WriteString("WHERE ")
-		sb.WriteString(c.conditionsAsSQL(values...))
+		c.queriesOps.AddMidQuery("WHERE ")
+		c.queriesOps.AddMidQuery(c.conditionsAsSQL(values...))
+		c.queriesOps.AddValues(values...)
 	}
 
-	if len(c.extraFuncs) > 0 {
-		sb.WriteString(" ")
-		for _, function := range c.extraFuncs {
-			sb.WriteString(function())
-		}
-	}
-
-	sb.WriteString(";")
-
-	return sb.String(), c.queryValues
+	return c.queriesOps.returnBuiltQueryAndValues()
 }
 
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
-	var sb strings.Builder
+	c.queriesOps.AddPreQuery("INSERT INTO ")
+	c.queriesOps.AddPreQuery(fmt.Sprintf("dmd.dbo.%s ", c.table))
+	c.queriesOps.AddPreQuery("(")
+	c.queriesOps.AddPreQuery(c.attributesAsSQL())
+	c.queriesOps.AddPreQuery(") ")
 
-	sb.WriteString("INSERT INTO ")
-	sb.WriteString(fmt.Sprintf("dmd.dbo.%s ", c.table))
-	sb.WriteString("(" + c.attributesAsSQL() + ") ")
-	sb.WriteString("VALUES ")
-	sb.WriteString("(" + c.attributeValuesAsSQL() + ")")
-	sb.WriteString(";")
+	c.queriesOps.AddMidQuery("VALUES ")
+	c.queriesOps.AddMidQuery("(")
+	c.queriesOps.AddMidQuery(c.attributeValuesAsSQL())
+	c.queriesOps.AddMidQuery(")")
 
-	return sb.String(), c.queryValues
+	c.queriesOps.AddValues(c.attributeValuesAsArray()...)
+
+	return c.queriesOps.returnBuiltQueryAndValues()
 }
 
 func (c *CompositionOps) discoverTable(object interface{}) {
@@ -104,8 +97,8 @@ func (c *CompositionOps) attributesAsSQL() string {
 
 func (c *CompositionOps) attributeValuesAsSQL() string {
 	var sb strings.Builder
-	for i, x := range c.attributesValues {
-		sb.WriteString(fmt.Sprintf("%s", c.quotedOrNot(x)))
+	for i, _ := range c.attributesValues {
+		sb.WriteString(fmt.Sprintf("%s","?"))
 		if i < len(c.attributes)-1 {
 			sb.WriteString(", ")
 		} else {
@@ -114,6 +107,15 @@ func (c *CompositionOps) attributeValuesAsSQL() string {
 	}
 
 	return sb.String()
+}
+
+func (c *CompositionOps) attributeValuesAsArray() []interface{} {
+	var values []interface{}
+	for _, value := range c.attributesValues {
+		values = append(values, value)
+	}
+
+	return values
 }
 
 func (c *CompositionOps) conditionsAsSQL(values ...interface{}) string {
@@ -151,6 +153,6 @@ func (c *CompositionOps) quotedOrNot(value interface{}) string {
 	return ""
 }
 
-func (c *CompositionOps) AddFunctionToStack(anotherFunc func() string) {
-	c.extraFuncs = append(c.extraFuncs, anotherFunc)
+func (c *CompositionOps) GetQueriesOps() *QueriesOps {
+	return &c.queriesOps
 }

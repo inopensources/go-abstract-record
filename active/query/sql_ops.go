@@ -14,9 +14,9 @@ type SQLOps struct {
 	Db          *sql.DB
 }
 
-func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraFuncs ...func() string) *SQLOps {
+func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB) *SQLOps {
 	sqlOps := SQLOps{}
-	sqlOps.composition = *NewCompositionOps(object, extraFuncs...)
+	sqlOps.composition = *NewCompositionOps(object)
 	sqlOps.Object = object
 	sqlOps.ObjectArray = objectArray
 	sqlOps.Db = db

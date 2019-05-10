@@ -5,7 +5,7 @@ import (
 	"github.com/infarmasistemas/go-abstract-record/active/abstract"
 	"github.com/infarmasistemas/go-abstract-record/active/check"
 	"github.com/infarmasistemas/go-abstract-record/active/instance"
-	"github.com/infarmasistemas/go-abstract-record/active/query/tail_funcs"
+	"github.com/infarmasistemas/go-abstract-record/active/query/post_funcs"
 )
 
 type AbstractRecord struct {
@@ -14,9 +14,9 @@ type AbstractRecord struct {
 	abstractOps abstract.AbstractOps
 }
 
-func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB,extraFuncs ...func() string) *AbstractRecord {
+func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB) *AbstractRecord {
 	abstract := AbstractRecord{}
-	abstract.abstractOps.Prepare(object, objectArray, db, extraFuncs...)
+	abstract.abstractOps.Prepare(object, objectArray, db)
 	abstract.instanceOps.Prepare(object, objectArray)
 	return &abstract
 }
@@ -42,6 +42,8 @@ func (e *AbstractRecord) Save() error {
 }
 
 func (e *AbstractRecord) Paginate(pk string, offset, pageSize int) *AbstractRecord {
-	e.abstractOps.SqlOps.GetComposition().AddFunctionToStack(tail_funcs.PaginationFunc(pk, offset, pageSize))
+	query, values := post_funcs.PaginationFunc(pk, offset, pageSize)
+	e.abstractOps.SqlOps.GetComposition().GetQueriesOps().AddValues(values...)
+	e.abstractOps.SqlOps.GetComposition().GetQueriesOps().AddPostQuery(query)
 	return e
 }
