@@ -12,12 +12,14 @@ type CompositionOps struct {
 	attributesValues []interface{}
 	pointerList      []interface{}
 	queryValues      []interface{}
+	extraFuncs  	 []func() string
 }
 
-func NewCompositionOps(object interface{}) *CompositionOps {
+func NewCompositionOps(object interface{}, extraFuncs ...func() string) *CompositionOps {
 	newCompositionOps := CompositionOps{}
 	newCompositionOps.discoverTable(object)
 	newCompositionOps.discoverAttributesAndpointerList(object)
+	newCompositionOps.extraFuncs = extraFuncs
 
 	return &newCompositionOps
 }
@@ -32,6 +34,13 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 	if len(values) > 0 {
 		sb.WriteString("WHERE ")
 		sb.WriteString(c.conditionsAsSQL(values...))
+	}
+
+	if len(c.extraFuncs) > 0 {
+		sb.WriteString(" ")
+		for _, function := range c.extraFuncs {
+			sb.WriteString(function())
+		}
 	}
 
 	sb.WriteString(";")

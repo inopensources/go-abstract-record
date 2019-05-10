@@ -13,9 +13,9 @@ type AbstractRecord struct {
 	abstractOps abstract.AbstractOps
 }
 
-func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB) *AbstractRecord {
+func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB,  extraFuncs ...func() string) *AbstractRecord {
 	abstract := AbstractRecord{}
-	abstract.abstractOps.Prepare(object, objectArray, db)
+	abstract.abstractOps.Prepare(object, objectArray, db, extraFuncs...)
 	abstract.instanceOps.Prepare(object, objectArray)
 	return &abstract
 }
