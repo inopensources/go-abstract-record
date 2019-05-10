@@ -2,11 +2,11 @@ package abstract
 
 import (
 	"database/sql"
-	"github.com/infarmasistemas/go-abstract-record/active/dimension/query"
+	"github.com/infarmasistemas/go-abstract-record/active/query"
 )
 
 type AbstractOps struct {
-	SqlOps      query.SQLOps
+	SqlOps query.SQLOps
 }
 
 func (d *AbstractOps) Prepare(object interface{}, objectArray interface{}, db *sql.DB, extraFuncs ...func() string) {

@@ -1,10 +1,10 @@
-package dimension
+package active
 
 import (
 	"database/sql"
-	"github.com/infarmasistemas/go-abstract-record/active/dimension/abstract"
-	"github.com/infarmasistemas/go-abstract-record/active/dimension/check"
-	"github.com/infarmasistemas/go-abstract-record/active/dimension/instance"
+	"github.com/infarmasistemas/go-abstract-record/active/abstract"
+	"github.com/infarmasistemas/go-abstract-record/active/check"
+	"github.com/infarmasistemas/go-abstract-record/active/instance"
 )
 
 type AbstractRecord struct {
