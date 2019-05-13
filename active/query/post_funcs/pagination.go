@@ -23,8 +23,8 @@ func NewPagination(pk string, offset, pageSize int) *Pagination {
 func (p *Pagination) Paginate() (string, []interface{}) {
 	var values []interface{}
 
-	values = append(values, p.PageSize)
 	values = append(values, p.Offset)
+	values = append(values, p.PageSize)
 
 	//Since the Order By expects the name of a column instead of a value, it has to be
 	//replaced directly into the string instead as part of a prepared statement.

@@ -28,3 +28,12 @@ func (d *AbstractOps) Where(values ...interface{}) error {
 func (d *AbstractOps) Save(values ...interface{}) error {
 	return d.SqlOps.Insert()
 }
+
+func (d *AbstractOps) Update(values ...interface{}) error {
+	return d.SqlOps.Update()
+}
+
+func (d *AbstractOps) Delete(values ...interface{}) error {
+	return d.SqlOps.Delete()
+}
+

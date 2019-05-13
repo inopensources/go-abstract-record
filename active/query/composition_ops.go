@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"github.com/infarmasistemas/go-abstract-record/active/query/composer"
 	"reflect"
 	"strings"
 )
@@ -12,46 +13,62 @@ type CompositionOps struct {
 	attributesValues []interface{}
 	pointerList      []interface{}
 	queryValues      []interface{}
-	queriesOps       QueriesOps
+	composer         composer.Composer
 }
 
 func NewCompositionOps(object interface{}) *CompositionOps {
 	newCompositionOps := CompositionOps{}
 	newCompositionOps.discoverTable(object)
 	newCompositionOps.discoverAttributesAndpointerList(object)
+	newCompositionOps.composer = composer.NewComposer()
 
 	return &newCompositionOps
 }
 
 func (c *CompositionOps) Select(values ...interface{}) (query string, pointerList []interface{}) {
-	c.queriesOps.AddPreQuery("SELECT ")
-	c.queriesOps.AddPreQuery(c.attributesAsSQL())
-	c.queriesOps.AddPreQuery(fmt.Sprintf("FROM dmd.dbo.%s ", c.table))
+	c.composer.Selec.AddColumn(c.attributesAsColumnNames()...)
+	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
 
 	if len(values) > 0 {
-		c.queriesOps.AddMidQuery("WHERE ")
-		c.queriesOps.AddMidQuery(c.conditionsAsSQL(values...))
-		c.queriesOps.AddValues(values...)
+		fmt.Println(c.conditions())
+		c.composer.Where.AddCondition(c.conditions(values...)...)
+		for i := range values {
+			if i % 2 != 0 {
+				c.composer.AddValues(values[i])
+			}
+		}
 	}
 
-	return c.queriesOps.returnBuiltQueryAndValues()
+	return c.composer.BuildQuery()
 }
 
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
-	c.queriesOps.AddPreQuery("INSERT INTO ")
-	c.queriesOps.AddPreQuery(fmt.Sprintf("dmd.dbo.%s ", c.table))
-	c.queriesOps.AddPreQuery("(")
-	c.queriesOps.AddPreQuery(c.attributesAsSQL())
-	c.queriesOps.AddPreQuery(") ")
+	c.composer.Insert.AddColumn(c.attributesAsColumnNames()...)
+	c.composer.Insert.AddTableName(fmt.Sprintf("dmd.dbo.%s ", c.table))
+	c.composer.AddValues(c.attributeValuesAsArray()...)
 
-	c.queriesOps.AddMidQuery("VALUES ")
-	c.queriesOps.AddMidQuery("(")
-	c.queriesOps.AddMidQuery(c.attributeValuesAsSQL())
-	c.queriesOps.AddMidQuery(")")
+	return c.composer.BuildQuery()
+}
 
-	c.queriesOps.AddValues(c.attributeValuesAsArray()...)
+func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
+	c.composer.Delete.Call()
+	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
+	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
+	c.composer.AddValues(c.attributeValuesAsArray()...)
 
-	return c.queriesOps.returnBuiltQueryAndValues()
+	return c.composer.BuildQuery()
+}
+
+func (c *CompositionOps) Update() (query string, pointerList []interface{}) {
+	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
+	c.composer.Set.AddColumn(c.attributesAsColumnNames()...)
+	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
+
+	//Review this
+	c.composer.AddValues(c.attributeValuesAsArray()...)
+	c.composer.AddValues(c.attributeValuesAsArray()...)
+
+	return c.composer.BuildQuery()
 }
 
 func (c *CompositionOps) discoverTable(object interface{}) {
@@ -81,24 +98,19 @@ func (c *CompositionOps) discoverAttributesAndpointerList(object interface{}) {
 	c.attributesValues = attributeValues
 }
 
-func (c *CompositionOps) attributesAsSQL() string {
-	var sb strings.Builder
-	for i, x := range c.attributes {
-		sb.WriteString(fmt.Sprintf("%s", x))
-		if i < len(c.attributes)-1 {
-			sb.WriteString(", ")
-		} else {
-			sb.WriteString(" ")
-		}
+func (c *CompositionOps) attributesAsColumnNames() []string {
+	var columns []string
+	for _, attributeName := range c.attributes {
+		columns = append(columns, attributeName)
 	}
 
-	return sb.String()
+	return columns
 }
 
 func (c *CompositionOps) attributeValuesAsSQL() string {
 	var sb strings.Builder
 	for i, _ := range c.attributesValues {
-		sb.WriteString(fmt.Sprintf("%s","?"))
+		sb.WriteString(fmt.Sprintf("%s", "?"))
 		if i < len(c.attributes)-1 {
 			sb.WriteString(", ")
 		} else {
@@ -118,23 +130,21 @@ func (c *CompositionOps) attributeValuesAsArray() []interface{} {
 	return values
 }
 
-func (c *CompositionOps) conditionsAsSQL(values ...interface{}) string {
-	var sb strings.Builder
+func (c *CompositionOps) conditions(values ...interface{}) []string {
 	var queryValues []interface{}
 
-	for i, x := range values {
+	var conditions []string
+
+	for i, condition := range values {
 		if i%2 == 0 {
-			sb.WriteString(fmt.Sprintf("%s = ?", x))
-			if i+1 < len(values)-1 {
-				sb.WriteString(" AND ")
-			}
+			conditions = append(conditions, fmt.Sprintf("%s", condition))
 		} else {
-			queryValues = append(queryValues, x)
+			queryValues = append(queryValues, condition)
 		}
 	}
 
 	c.queryValues = queryValues
-	return sb.String()
+	return conditions
 }
 
 func (c *CompositionOps) getPointerList() []interface{} {
@@ -153,6 +163,6 @@ func (c *CompositionOps) quotedOrNot(value interface{}) string {
 	return ""
 }
 
-func (c *CompositionOps) GetQueriesOps() *QueriesOps {
-	return &c.queriesOps
+func (c *CompositionOps) GetComposer() *composer.Composer{
+	return &c.composer
 }

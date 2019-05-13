@@ -96,6 +96,38 @@ func (s *SQLOps) Insert() error {
 	return nil
 }
 
+func (s *SQLOps) Delete() error {
+	query, queryValues := s.composition.Delete()
+
+	fmt.Println("QUERY:", query)
+	fmt.Println("VALUES:", queryValues)
+
+	result, err := s.Db.Exec(query, queryValues...)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(result.LastInsertId())
+
+	return nil
+}
+
+func (s *SQLOps) Update() error {
+	query, queryValues := s.composition.Update()
+
+	fmt.Println("QUERY:", query)
+	fmt.Println("VALUES:", queryValues)
+
+	result, err := s.Db.Exec(query, queryValues...)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(result.LastInsertId())
+
+	return nil
+}
+
 func (s *SQLOps) GetComposition() *CompositionOps {
 	return &s.composition
 }

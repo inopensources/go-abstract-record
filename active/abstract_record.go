@@ -41,9 +41,17 @@ func (e *AbstractRecord) Save() error {
 	return e.abstractOps.Save()
 }
 
+func (e *AbstractRecord) Delete() error {
+	return e.abstractOps.Delete()
+}
+
+func (e *AbstractRecord) Update() error {
+	return e.abstractOps.Update()
+}
+
 func (e *AbstractRecord) Paginate(pk string, offset, pageSize int) *AbstractRecord {
 	query, values := post_funcs.PaginationFunc(pk, offset, pageSize)
-	e.abstractOps.SqlOps.GetComposition().GetQueriesOps().AddValues(values...)
-	e.abstractOps.SqlOps.GetComposition().GetQueriesOps().AddPostQuery(query)
+	e.abstractOps.SqlOps.GetComposition().GetComposer().PostQuery.AddPostQuery(query)
+	e.abstractOps.SqlOps.GetComposition().GetComposer().AddPostValues(values...)
 	return e
 }
