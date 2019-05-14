@@ -107,17 +107,6 @@ func (c *CompositionOps) attributesAsColumnNames() []string {
 	return columns
 }
 
-func (c *CompositionOps) attributesAsColumnNamesForPopulated() []string {
-	var columns []string
-	for i, attributeName := range c.attributes {
-		if reflect.ValueOf(c.attributesValues[i]).Elem().IsValid() {
-			columns = append(columns, attributeName)
-		}
-	}
-
-	return columns
-}
-
 func (c *CompositionOps) attributeValuesAsSQL() string {
 	var sb strings.Builder
 	for i, _ := range c.attributesValues {
