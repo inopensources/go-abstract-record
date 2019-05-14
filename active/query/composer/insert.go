@@ -41,7 +41,7 @@ func (i *Insert) Build() string {
 	// Writing tables
 	sb.WriteString(i.base)
 	sb.WriteString(i.tableName)
-	sb.WriteString(" ")
+
 	sb.WriteString("(")
 	for index, column := range i.columns {
 		if index == (len(i.columns)-1) {
