@@ -30,7 +30,7 @@ func (d *AbstractOps) Save(values ...interface{}) error {
 }
 
 func (d *AbstractOps) Update(values ...interface{}) error {
-	return d.SqlOps.Update()
+	return d.SqlOps.Update(values...)
 }
 
 func (d *AbstractOps) Delete(values ...interface{}) error {

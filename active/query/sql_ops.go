@@ -102,27 +102,26 @@ func (s *SQLOps) Delete() error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.Db.Exec(query, queryValues...)
+	_, err := s.Db.Exec(query, queryValues...)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(result.LastInsertId())
-
-	return nil
+	return err
 }
 
-func (s *SQLOps) Update() error {
-	query, queryValues := s.composition.Update()
+func (s *SQLOps) Update(values ...interface{}) error {
+	query, queryValues := s.composition.Update(values...)
 
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.Db.Exec(query, queryValues...)
+	result, err := s.Db.Exec(query)
 	if err != nil {
 		return err
 	}
 
+	fmt.Println(result.RowsAffected())
 	fmt.Println(result.LastInsertId())
 
 	return nil

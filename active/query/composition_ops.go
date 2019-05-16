@@ -59,13 +59,24 @@ func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	return c.composer.BuildQuery()
 }
 
-func (c *CompositionOps) Update() (query string, pointerList []interface{}) {
+func (c *CompositionOps) Update(values ...interface{}) (query string, pointerList []interface{}) {
 	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
-	c.composer.Set.AddColumn(c.attributesAsColumnNames()...)
+
+	for index, colName := range values {
+		if index % 2 == 0{
+			c.composer.Set.AddColumn(fmt.Sprint(colName))
+		}
+	}
+
 	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
 
 	//Review this
-	c.composer.AddValues(c.attributeValuesAsArray()...)
+	for index, attributeValue := range values {
+		if index % 2 != 0{
+			c.composer.AddValues(attributeValue)
+		}
+	}
+
 	c.composer.AddValues(c.attributeValuesAsArray()...)
 
 	return c.composer.BuildQuery()

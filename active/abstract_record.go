@@ -45,8 +45,8 @@ func (e *AbstractRecord) Delete() error {
 	return e.abstractOps.Delete()
 }
 
-func (e *AbstractRecord) Update() error {
-	return e.abstractOps.Update()
+func (e *AbstractRecord) Update(values ...interface{}) error {
+	return e.checkOps.TreatValuesForUpdate(e.abstractOps.Update, values...)
 }
 
 func (e *AbstractRecord) Paginate(pk string, offset, pageSize int) *AbstractRecord {
