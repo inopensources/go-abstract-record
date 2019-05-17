@@ -13,6 +13,7 @@ type CompositionOps struct {
 	attributesValues []interface{}
 	pointerList      []interface{}
 	queryValues      []interface{}
+	object			 interface{}
 	composer         composer.Composer
 }
 
@@ -21,6 +22,7 @@ func NewCompositionOps(object interface{}) *CompositionOps {
 	newCompositionOps.discoverTable(object)
 	newCompositionOps.discoverAttributesAndpointerList(object)
 	newCompositionOps.composer = composer.NewComposer()
+	newCompositionOps.object = object
 
 	return &newCompositionOps
 }
@@ -95,18 +97,25 @@ func (c *CompositionOps) discoverAttributesAndpointerList(object interface{}) {
 	typeOfT := s.Type()
 
 	for i := 0; i < s.NumField(); i++ {
-		p := strings.Replace(string(typeOfT.Field(i).Tag), "json:\"", "", -1)
-		p = strings.Replace(p, "\"", "", -1)
-
+		finalGar := c.parseGar(typeOfT.Field(i))
 		someField := s.Field(i)
 		fieldList = append(fieldList, someField.Addr().Interface())
-		attributeList = append(attributeList, p)
+		attributeList = append(attributeList, finalGar)
 		attributeValues = append(attributeValues, someField.Interface())
 	}
 
 	c.attributes = attributeList
 	c.pointerList = fieldList
 	c.attributesValues = attributeValues
+}
+
+func (c *CompositionOps) parseGar(field reflect.StructField) string {
+	tags := strings.Split(string(field.Tag), ";")
+	gar := tags[len(tags)-1]
+	finalGar := strings.Replace(gar, "gar:\"", "", -1)
+	finalGar = strings.Replace(finalGar, "\"", "", -1)
+
+	return finalGar
 }
 
 func (c *CompositionOps) attributesAsColumnNames() []string {
