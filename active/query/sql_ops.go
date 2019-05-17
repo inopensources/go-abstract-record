@@ -116,7 +116,7 @@ func (s *SQLOps) Update(values ...interface{}) error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.Db.Exec(query)
+	result, err := s.Db.Exec(query, queryValues...)
 	if err != nil {
 		return err
 	}
