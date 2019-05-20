@@ -95,7 +95,8 @@ func (s *SQLOps) Insert() error {
 		return err
 	}
 
-	fmt.Println(result.LastInsertId())
+	recordsAffected, _ := result.RowsAffected()
+	fmt.Println(recordsAffected, "records affected")
 
 	return nil
 }
@@ -106,10 +107,13 @@ func (s *SQLOps) Delete() error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	_, err := s.Db.Exec(query, queryValues...)
+	result, err := s.Db.Exec(query, queryValues...)
 	if err != nil {
 		return err
 	}
+
+	recordsAffected, _ := result.RowsAffected()
+	fmt.Println(recordsAffected, "records affected")
 
 	return err
 }
@@ -125,7 +129,8 @@ func (s *SQLOps) Update(values ...interface{}) error {
 		return err
 	}
 
-	fmt.Println(result.RowsAffected())
+	recordsAffected, _ := result.RowsAffected()
+	fmt.Println(recordsAffected, "records affected")
 
 	return nil
 }

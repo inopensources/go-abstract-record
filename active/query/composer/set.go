@@ -1,10 +1,14 @@
 package composer
 
-import "strings"
+import (
+	"github.com/infarmasistemas/go-abstract-record/active/query/composer/object_value"
+	"strings"
+)
 
 type Set struct {
-	base    string
-	columns []string
+	base         string
+	columns      []string
+	objectValues []object_value.ObjectValue
 }
 
 func NewSet() Set {
@@ -16,6 +20,12 @@ func NewSet() Set {
 
 func (s *Set) AddColumn(value ...string) {
 	s.columns = append(s.columns, value...)
+}
+
+func (s *Set) AddValues(values ...interface{}) {
+	for _, value := range values {
+		s.objectValues = append(s.objectValues, object_value.NewObjectValue(value))
+	}
 }
 
 func (s *Set) Valid() bool {
@@ -36,7 +46,7 @@ func (s *Set) Build() string {
 	// Writing tables
 	sb.WriteString(s.base)
 	for index, column := range s.columns {
-		if index == (len(s.columns)-1) {
+		if index == (len(s.columns) - 1) {
 			sb.WriteString(column)
 			sb.WriteString(" = ?")
 		} else {
@@ -48,4 +58,22 @@ func (s *Set) Build() string {
 	sb.WriteString(" ")
 
 	return sb.String()
+}
+
+func (s *Set) objectValuesPresent() bool {
+	if len(s.objectValues) > 0 {
+		return true
+	}
+
+	return false
+}
+
+func (s *Set) getValues() []interface{} {
+	var values []interface{}
+	for _, value := range s.objectValues {
+		values = append(values, value.GetObject())
+
+	}
+
+	return values
 }

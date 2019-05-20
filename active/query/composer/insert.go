@@ -1,11 +1,15 @@
 package composer
 
-import "strings"
+import (
+	"github.com/infarmasistemas/go-abstract-record/active/query/composer/object_value"
+	"strings"
+)
 
 type Insert struct {
 	base    string
 	columns []string
 	tableName string
+	objectValues []object_value.ObjectValue
 }
 
 func NewInsert() Insert {
@@ -31,6 +35,12 @@ func (i *Insert) AddTableName(value string) {
 	i.tableName = value
 }
 
+func (i *Insert) AddValues(values ...interface{}) {
+	for _, value := range values {
+		i.objectValues = append(i.objectValues, object_value.NewObjectValue(value))
+	}
+}
+
 func (i *Insert) Build() string {
 	var sb strings.Builder
 
@@ -42,6 +52,7 @@ func (i *Insert) Build() string {
 	sb.WriteString(i.base)
 	sb.WriteString(i.tableName)
 
+	sb.WriteString(" ")
 	sb.WriteString("(")
 	for index, column := range i.columns {
 		if index == (len(i.columns)-1) {
@@ -67,4 +78,15 @@ func (i *Insert) Build() string {
 	sb.WriteString(")")
 
 	return sb.String()
+}
+
+func (i *Insert) getValues() []interface{} {
+	var values []interface{}
+	for _, value := range i.objectValues {
+		//if value.IsValid() {
+			values = append(values, value.GetObject())
+		//}
+	}
+
+	return values
 }

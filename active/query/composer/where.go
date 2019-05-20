@@ -1,10 +1,14 @@
 package composer
 
-import "strings"
+import (
+	"github.com/infarmasistemas/go-abstract-record/active/query/composer/object_value"
+	"strings"
+)
 
 type Where struct {
-	base       string
-	conditions []string
+	base         string
+	conditions   []string
+	objectValues []object_value.ObjectValue
 }
 
 func NewWhere() Where {
@@ -26,6 +30,12 @@ func (w *Where) AddCondition(value ...string) {
 	w.conditions = append(w.conditions, value...)
 }
 
+func (w *Where) AddValues(values ...interface{}) {
+	for _, value := range values {
+		w.objectValues = append(w.objectValues, object_value.NewObjectValue(value))
+	}
+}
+
 func (w *Where) Build() string {
 	var sb strings.Builder
 
@@ -36,17 +46,46 @@ func (w *Where) Build() string {
 	// Writing tables
 	sb.WriteString(w.base)
 	for index, condition := range w.conditions {
+		sb.WriteString(condition)
+
 		if index == (len(w.conditions) - 1) {
-			sb.WriteString(condition)
-			sb.WriteString(" = ?")
-		} else {
-			sb.WriteString(condition)
-			sb.WriteString(" = ?")
-			sb.WriteString(" AND ")
+			if w.objectValuesPresent() {
+				sb.WriteString(w.objectValues[index].ReturnSQL())
+			} else {
+				sb.WriteString(" = ?")
+			}
+			break
 		}
+
+		if w.objectValuesPresent() {
+			sb.WriteString(w.objectValues[index].ReturnSQL())
+		} else {
+			sb.WriteString(" = ?")
+		}
+
+		sb.WriteString(" AND ")
 	}
 
 	sb.WriteString(" ")
 
 	return sb.String()
+}
+
+func (w *Where) objectValuesPresent() bool {
+	if len(w.objectValues) > 0 {
+		return true
+	}
+
+	return false
+}
+
+func (w *Where) getValues() []interface{} {
+	var values []interface{}
+	for _, value := range w.objectValues {
+		if value.IsValid() {
+			values = append(values, value.GetObject())
+		}
+	}
+
+	return values
 }

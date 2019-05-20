@@ -1,6 +1,8 @@
 package composer
 
-import "strings"
+import (
+	"strings"
+)
 
 type Composer struct {
 	Selec      Select
@@ -44,6 +46,7 @@ func (c *Composer) buildValues() {
 
 func (c *Composer) BuildQuery() (string, []interface{}) {
 	var sb strings.Builder
+	var queryValues []interface{}
 
 	if c.Selec.Valid() {
 		sb.WriteString(c.Selec.Build())
@@ -62,14 +65,17 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 	}
 
 	if c.Set.Valid() {
+		queryValues = append(queryValues, c.Set.getValues()...)
 		sb.WriteString(c.Set.Build())
 	}
 
 	if c.Where.Valid() {
+		queryValues = append(queryValues, c.Where.getValues()...)
 		sb.WriteString(c.Where.Build())
 	}
 
 	if c.Insert.Valid() {
+		queryValues = append(queryValues, c.Insert.getValues()...)
 		sb.WriteString(c.Insert.Build())
 	}
 
@@ -77,10 +83,10 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 		sb.WriteString(c.PostQuery.Build())
 	}
 
-	sb.WriteString(";")
-
 	//Consolidate query values
 	c.buildValues()
 
-	return sb.String(), c.Values
+	sb.WriteString(";")
+
+	return sb.String(), queryValues
 }

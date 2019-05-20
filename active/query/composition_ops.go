@@ -33,11 +33,11 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
 
 	if len(values) > 0 {
-		fmt.Println(c.conditions())
 		c.composer.Where.AddCondition(c.conditions(values...)...)
 		for i := range values {
 			if i%2 != 0 {
-				c.composer.AddValues(values[i])
+				//c.composer.AddValues(values[i])
+				c.composer.Where.AddValues(values[i])
 			}
 		}
 	}
@@ -48,7 +48,7 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
 	c.composer.Insert.AddColumn(c.attributesAsColumnNames()...)
 	c.composer.Insert.AddTableName(fmt.Sprintf("dmd.dbo.%s ", c.table))
-	c.composer.AddValues(c.attributeValuesAsArray()...)
+	c.composer.Insert.AddValues(c.attributeValuesAsArray()...)
 
 	return c.composer.BuildQuery()
 }
@@ -57,7 +57,7 @@ func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	c.composer.Delete.Call()
 	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
 	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
-	c.composer.AddValues(c.attributeValuesAsArray()...)
+	c.composer.Where.AddValues(c.attributeValuesAsArray()...)
 
 	return c.composer.BuildQuery()
 }
@@ -68,19 +68,13 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 	for index, colName := range values {
 		if index%2 == 0 {
 			c.composer.Set.AddColumn(c.getRealColName(fmt.Sprint(colName)))
+		} else {
+			c.composer.Set.AddValues(colName)
 		}
 	}
 
 	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
-
-	//Review this
-	for index, attributeValue := range values {
-		if index%2 != 0 {
-			c.composer.AddValues(attributeValue)
-		}
-	}
-
-	c.composer.AddValues(c.attributeValuesAsArray()...)
+	c.composer.Where.AddValues(c.attributesValues...)
 
 	return c.composer.BuildQuery()
 }
