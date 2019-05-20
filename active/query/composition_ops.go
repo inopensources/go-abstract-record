@@ -9,11 +9,12 @@ import (
 
 type CompositionOps struct {
 	table            string
-	attributes       []string
+	attributesGar    []string
+	attributesJson   map[string]string
 	attributesValues []interface{}
 	pointerList      []interface{}
 	queryValues      []interface{}
-	object			 interface{}
+	object           interface{}
 	composer         composer.Composer
 }
 
@@ -35,7 +36,7 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 		fmt.Println(c.conditions())
 		c.composer.Where.AddCondition(c.conditions(values...)...)
 		for i := range values {
-			if i % 2 != 0 {
+			if i%2 != 0 {
 				c.composer.AddValues(values[i])
 			}
 		}
@@ -65,8 +66,8 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
 
 	for index, colName := range values {
-		if index % 2 == 0{
-			c.composer.Set.AddColumn(fmt.Sprint(colName))
+		if index%2 == 0 {
+			c.composer.Set.AddColumn(c.getRealColName(fmt.Sprint(colName)))
 		}
 	}
 
@@ -74,7 +75,7 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 
 	//Review this
 	for index, attributeValue := range values {
-		if index % 2 != 0{
+		if index%2 != 0 {
 			c.composer.AddValues(attributeValue)
 		}
 	}
@@ -89,56 +90,54 @@ func (c *CompositionOps) discoverTable(object interface{}) {
 }
 
 func (c *CompositionOps) discoverAttributesAndpointerList(object interface{}) {
-	var attributeList []string
+	var attributeListGar []string
+
 	var fieldList []interface{}
 	var attributeValues []interface{}
+
+	c.attributesJson = make(map[string]string, 0)
 
 	s := reflect.ValueOf(object).Elem()
 	typeOfT := s.Type()
 
 	for i := 0; i < s.NumField(); i++ {
-		finalGar := c.parseGar(typeOfT.Field(i))
+		finalGar, finalJson := c.parseJsonGar(typeOfT.Field(i))
+
 		someField := s.Field(i)
+
 		fieldList = append(fieldList, someField.Addr().Interface())
-		attributeList = append(attributeList, finalGar)
+		attributeListGar = append(attributeListGar, finalGar)
+		c.attributesJson[finalJson] = finalGar
+
 		attributeValues = append(attributeValues, someField.Interface())
 	}
 
-	c.attributes = attributeList
+	c.attributesGar = attributeListGar
 	c.pointerList = fieldList
 	c.attributesValues = attributeValues
 }
 
-func (c *CompositionOps) parseGar(field reflect.StructField) string {
+func (c *CompositionOps) parseJsonGar(field reflect.StructField) (string, string) {
 	tags := strings.Split(string(field.Tag), ";")
+
 	gar := tags[len(tags)-1]
 	finalGar := strings.Replace(gar, "gar:\"", "", -1)
 	finalGar = strings.Replace(finalGar, "\"", "", -1)
 
-	return finalGar
+	json := tags[0]
+	finalJson := strings.Replace(json, "json:\"", "", -1)
+	finalJson = strings.Replace(finalJson, "\"", "", -1)
+
+	return finalGar, finalJson
 }
 
 func (c *CompositionOps) attributesAsColumnNames() []string {
 	var columns []string
-	for _, attributeName := range c.attributes {
+	for _, attributeName := range c.attributesGar {
 		columns = append(columns, attributeName)
 	}
 
 	return columns
-}
-
-func (c *CompositionOps) attributeValuesAsSQL() string {
-	var sb strings.Builder
-	for i, _ := range c.attributesValues {
-		sb.WriteString(fmt.Sprintf("%s", "?"))
-		if i < len(c.attributes)-1 {
-			sb.WriteString(", ")
-		} else {
-			sb.WriteString(" ")
-		}
-	}
-
-	return sb.String()
 }
 
 func (c *CompositionOps) attributeValuesAsArray() []interface{} {
@@ -187,6 +186,10 @@ func (c *CompositionOps) quotedOrNot(value interface{}) string {
 	return ""
 }
 
-func (c *CompositionOps) GetComposer() *composer.Composer{
+func (c *CompositionOps) GetComposer() *composer.Composer {
 	return &c.composer
+}
+
+func (c *CompositionOps) getRealColName(value string) string {
+	return c.attributesJson[value]
 }

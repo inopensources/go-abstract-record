@@ -49,6 +49,10 @@ func (s *SQLOps) Select(values ...interface{}) error {
 		resultCount++
 	}
 
+	if resultCount == 0 {
+		return errors.New("No record found")
+	}
+
 	return err
 }
 
@@ -122,7 +126,6 @@ func (s *SQLOps) Update(values ...interface{}) error {
 	}
 
 	fmt.Println(result.RowsAffected())
-	fmt.Println(result.LastInsertId())
 
 	return nil
 }
