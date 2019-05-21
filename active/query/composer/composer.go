@@ -80,6 +80,7 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 	}
 
 	if c.PostQuery.Valid() {
+		queryValues = append(queryValues, c.PostQuery.getValues()...)
 		sb.WriteString(c.PostQuery.Build())
 	}
 

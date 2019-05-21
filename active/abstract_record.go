@@ -34,7 +34,7 @@ func (e *AbstractRecord) Where(values ...interface{}) error {
 }
 
 func (e *AbstractRecord) New(values ...interface{}) error {
-	return  e.checkOps.TreatEntry(e.instanceOps.NewSingle, e.instanceOps.NewArray, values...)
+	return e.checkOps.TreatEntry(e.instanceOps.NewSingle, e.instanceOps.NewArray, values...)
 }
 
 func (e *AbstractRecord) Save() error {
@@ -50,8 +50,11 @@ func (e *AbstractRecord) Update(values ...interface{}) error {
 }
 
 func (e *AbstractRecord) Paginate(pk string, offset, pageSize int) *AbstractRecord {
-	query, values := post_funcs.PaginationFunc(pk, offset, pageSize)
-	e.abstractOps.SqlOps.GetComposition().GetComposer().PostQuery.AddPostQuery(query)
-	e.abstractOps.SqlOps.GetComposition().GetComposer().AddPostValues(values...)
+	if pageSize > 0 {
+		query, values := post_funcs.PaginationFunc(pk, offset, pageSize)
+		e.abstractOps.SqlOps.GetComposition().GetComposer().PostQuery.AddPostQuery(query)
+		e.abstractOps.SqlOps.GetComposition().GetComposer().PostQuery.AddValues(values...)
+	}
+
 	return e
 }

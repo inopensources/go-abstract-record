@@ -1,15 +1,25 @@
 package composer
 
-import "strings"
+import (
+	"github.com/infarmasistemas/go-abstract-record/active/query/composer/object_value"
+	"strings"
+)
 
 type PostQuery struct {
 	body 	[]string
+	objectValues []object_value.ObjectValue
 }
 
 func NewPostQuery() PostQuery {
 	postQuery := PostQuery{}
 
 	return postQuery
+}
+
+func (p *PostQuery) AddValues(values ...interface{}) {
+	for _, value := range values {
+		p.objectValues = append(p.objectValues, object_value.NewObjectValue(value))
+	}
 }
 
 func (p *PostQuery) AddPostQuery(value ...string) {
@@ -33,4 +43,14 @@ func (p *PostQuery) Build() string {
 	}
 
 	return sb.String()
+}
+
+func (p *PostQuery) getValues() []interface{} {
+	var values []interface{}
+	for _, value := range p.objectValues {
+		values = append(values, value.GetObject())
+
+	}
+
+	return values
 }
