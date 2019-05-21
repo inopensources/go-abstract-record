@@ -12,9 +12,7 @@ type Composer struct {
 	Set        Set
 	Where      Where
 	Insert     Insert
-	Values     []interface{}
 	PostQuery  PostQuery
-	PostValues []interface{}
 }
 
 func NewComposer() Composer {
@@ -30,18 +28,6 @@ func NewComposer() Composer {
 	composer.Where = NewWhere()
 
 	return composer
-}
-
-func (c *Composer) AddValues(values ...interface{}) {
-	c.Values = append(c.Values, values...)
-}
-
-func (c *Composer) AddPostValues(values ...interface{}) {
-	c.PostValues = append(c.PostValues, values...)
-}
-
-func (c *Composer) buildValues() {
-	c.Values = append(c.Values, c.PostValues...)
 }
 
 func (c *Composer) BuildQuery() (string, []interface{}) {
@@ -83,9 +69,6 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 		queryValues = append(queryValues, c.PostQuery.getValues()...)
 		sb.WriteString(c.PostQuery.Build())
 	}
-
-	//Consolidate query values
-	c.buildValues()
 
 	sb.WriteString(";")
 
