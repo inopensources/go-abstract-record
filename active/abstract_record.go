@@ -9,14 +9,14 @@ import (
 )
 
 type AbstractRecord struct {
+	abstractOps abstract.AbstractOps
 	checkOps    check.CheckOps
 	instanceOps instance.InstanceOps
-	abstractOps abstract.AbstractOps
 }
 
-func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB) *AbstractRecord {
+func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...bool) *AbstractRecord {
 	abstract := AbstractRecord{}
-	abstract.abstractOps.Prepare(object, objectArray, db)
+	abstract.abstractOps.Prepare(object, objectArray, db, extraOptions...)
 	abstract.instanceOps.Prepare(object, objectArray)
 	return &abstract
 }
