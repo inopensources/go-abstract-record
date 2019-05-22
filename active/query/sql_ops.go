@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/infarmasistemas/go-abstract-record/active/options"
 	"reflect"
 )
 
@@ -13,15 +14,17 @@ type SQLOps struct {
 	Object        interface{}
 	ObjectArray   interface{}
 	Db            *sql.DB
+	optionsOps    options.OptionsOps
 }
 
-func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB) *SQLOps {
+func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...bool) *SQLOps {
 	sqlOps := SQLOps{}
 	sqlOps.composition = *NewCompositionOps(object)
 	sqlOps.Object = object
 	sqlOps.ObjectArray = objectArray
 	sqlOps.Db = db
 	sqlOps.relationships = *NewRelationshipOps(object)
+	sqlOps.optionsOps = options.NewOptionsOps(extraOptions...)
 
 	return &sqlOps
 }
@@ -55,8 +58,12 @@ func (s *SQLOps) Select(values ...interface{}) error {
 		return errors.New("No record found")
 	}
 
-	//Checking if this object has got relationships
-	s.relationships.checkForRelationships(s.Object)
+	//If DeepQuery is set to true, the relationships are
+	//going to be loaded
+	if s.optionsOps.DeepQuery {
+		//Method below checks if the current object has got relationships
+		s.relationships.checkForRelationships(s.Object)
+	}
 
 	return err
 }
