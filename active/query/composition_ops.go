@@ -97,13 +97,15 @@ func (c *CompositionOps) discoverAttributesAndpointerList(object interface{}) {
 	for i := 0; i < s.NumField(); i++ {
 		finalGar, finalJson := c.parseJsonGar(typeOfT.Field(i))
 
-		someField := s.Field(i)
+		if len(finalGar) > 0 && len(finalJson) > 0 {
+			someField := s.Field(i)
 
-		fieldList = append(fieldList, someField.Addr().Interface())
-		attributeListGar = append(attributeListGar, finalGar)
-		c.attributesJson[finalJson] = finalGar
+			fieldList = append(fieldList, someField.Addr().Interface())
+			attributeListGar = append(attributeListGar, finalGar)
+			c.attributesJson[finalJson] = finalGar
 
-		attributeValues = append(attributeValues, someField.Interface())
+			attributeValues = append(attributeValues, someField.Interface())
+		}
 	}
 
 	c.attributesGar = attributeListGar
@@ -112,15 +114,15 @@ func (c *CompositionOps) discoverAttributesAndpointerList(object interface{}) {
 }
 
 func (c *CompositionOps) parseJsonGar(field reflect.StructField) (string, string) {
-	tags := strings.Split(string(field.Tag), ";")
+	var finalGar, finalJson string
 
-	gar := tags[len(tags)-1]
-	finalGar := strings.Replace(gar, "gar:\"", "", -1)
-	finalGar = strings.Replace(finalGar, "\"", "", -1)
+	//Rel is present, therefore it is a relationship model
+	if _, presence := field.Tag.Lookup("rel"); presence {
+		return finalGar, finalJson
+	}
 
-	json := tags[0]
-	finalJson := strings.Replace(json, "json:\"", "", -1)
-	finalJson = strings.Replace(finalJson, "\"", "", -1)
+	finalJson = field.Tag.Get("json")
+	finalGar = field.Tag.Get("gar")
 
 	return finalGar, finalJson
 }

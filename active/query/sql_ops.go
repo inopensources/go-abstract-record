@@ -8,10 +8,11 @@ import (
 )
 
 type SQLOps struct {
-	composition CompositionOps
-	Object      interface{}
-	ObjectArray interface{}
-	Db          *sql.DB
+	relationships RelationshipOps
+	composition   CompositionOps
+	Object        interface{}
+	ObjectArray   interface{}
+	Db            *sql.DB
 }
 
 func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB) *SQLOps {
@@ -20,6 +21,7 @@ func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB) *SQLOps 
 	sqlOps.Object = object
 	sqlOps.ObjectArray = objectArray
 	sqlOps.Db = db
+	sqlOps.relationships = *NewRelationshipOps(object)
 
 	return &sqlOps
 }
@@ -52,6 +54,9 @@ func (s *SQLOps) Select(values ...interface{}) error {
 	if resultCount == 0 {
 		return errors.New("No record found")
 	}
+
+	//Checking if this object has got relationships
+	s.relationships.checkForRelationships(s.Object)
 
 	return err
 }
