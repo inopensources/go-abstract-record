@@ -86,6 +86,15 @@ func (s *SQLOps) Where(values ...interface{}) error {
 			fmt.Println(err)
 		}
 
+		//If DeepQuery is set to true, the relationships are
+		//going to be loaded
+		//ATTENTION: This may slowdown your query, as a new SQL
+		//query will be created for every parent object returned
+		if s.optionsOps.DeepQuery {
+			//Method below checks if the current object has got relationships
+			s.relationships.checkForRelationships(s.Object)
+		}
+
 		valuePtr := reflect.ValueOf(s.ObjectArray)
 		value := valuePtr.Elem()
 		value.Set(reflect.Append(value, reflect.ValueOf(s.Object).Elem()))

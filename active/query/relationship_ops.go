@@ -2,13 +2,15 @@ package query
 
 import (
 	"fmt"
+	"github.com/infarmasistemas/go-abstract-record/active/query/relationships/has_many"
 	"github.com/infarmasistemas/go-abstract-record/active/query/relationships/has_one"
 	"reflect"
 )
 
 type RelationshipOps struct {
-	object interface{}
-	hasOne has_one.HasOne
+	object  interface{}
+	hasOne  has_one.HasOne
+	hasMany has_many.HasMany
 }
 
 func NewRelationshipOps(object interface{}) *RelationshipOps {
@@ -28,12 +30,19 @@ func (r *RelationshipOps) checkForRelationships(object interface{}) {
 			r.hasOne.AddRelatedField(field, s.Field(i), s.Field(i).Elem().Interface())
 		}
 
-		//HasMany should come here
+		if value, presenceHasMany := field.Tag.Lookup("has_many"); presenceHasMany {
+			fmt.Println("Has many", value)
+			r.hasMany.AddRelatedField(field, s.Field(i))
+		}
 	}
 
 	//If there are relationships for this model in particular
 	if r.hasOne.RelatedFieldsPresent() {
 		r.hasOne.FetchRelatedObjects(object)
+	}
+
+	if r.hasMany.RelatedFieldsPresent() {
+		r.hasMany.FetchRelatedObjects(object)
 	}
 }
 
