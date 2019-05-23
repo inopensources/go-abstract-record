@@ -23,7 +23,6 @@ func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOpt
 	sqlOps.Object = object
 	sqlOps.ObjectArray = objectArray
 	sqlOps.Db = db
-	sqlOps.relationships = *NewRelationshipOps(object)
 	sqlOps.optionsOps = options.NewOptionsOps(extraOptions...)
 
 	return &sqlOps
@@ -61,8 +60,15 @@ func (s *SQLOps) Select(values ...interface{}) error {
 	//If DeepQuery is set to true, the relationships are
 	//going to be loaded
 	if s.optionsOps.DeepQuery {
+		//Creating new relationship object
+		s.relationships = NewRelationshipOps(s.Object)
+
 		//Method below checks if the current object has got relationships
-		s.relationships.checkForRelationships(s.Object)
+		s.relationships.checkForRelationships()
+
+		s.relationships.fetchHasOneRelatedObjects()
+
+		s.relationships.fetchHasManyRelatedObjects()
 	}
 
 	return err
@@ -91,9 +97,17 @@ func (s *SQLOps) Where(values ...interface{}) error {
 		//ATTENTION: This may slowdown your query, as a new SQL
 		//query will be created for every parent object returned
 		if s.optionsOps.DeepQuery {
+			//Creating new relationship object
+			s.relationships = NewRelationshipOps(s.Object)
+
 			//Method below checks if the current object has got relationships
-			s.relationships.checkForRelationships(s.Object)
+			s.relationships.checkForRelationships()
+
+			s.relationships.fetchHasOneRelatedObjects()
+
+			s.relationships.fetchHasManyRelatedObjects()
 		}
+
 
 		valuePtr := reflect.ValueOf(s.ObjectArray)
 		value := valuePtr.Elem()

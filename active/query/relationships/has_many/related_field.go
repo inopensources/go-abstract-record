@@ -20,7 +20,7 @@ func (r *RelatedField) getParams(object interface{}) []reflect.Value {
 	var params []reflect.Value
 
 	//Get with value
-	fk := reflect.ValueOf(object).Elem().FieldByName(r.structField.Tag.Get("with")).Interface()
+	fk := r.getFK(object)
 
 	params = append(params, reflect.ValueOf(0))
 	params = append(params, reflect.ValueOf(0))
@@ -28,6 +28,10 @@ func (r *RelatedField) getParams(object interface{}) []reflect.Value {
 	params = append(params, reflect.ValueOf(fk))
 
 	return params
+}
+
+func (r *RelatedField) getFK(object interface{}) interface{} {
+	return reflect.ValueOf(object).Elem().FieldByName(r.structField.Tag.Get("with")).Interface()
 }
 
 func (r *RelatedField) FetchRelations(object interface{}) {

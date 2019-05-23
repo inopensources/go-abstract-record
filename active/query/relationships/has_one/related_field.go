@@ -7,14 +7,12 @@ import (
 type RelatedField struct {
 	structField reflect.StructField
 	field       reflect.Value
-	fk          interface{}
 }
 
-func NewRelatedField(structField reflect.StructField, field reflect.Value, fk interface{}) RelatedField {
+func NewRelatedField(structField reflect.StructField, field reflect.Value) RelatedField {
 	return RelatedField{
 		structField: structField,
 		field:       field,
-		fk:          fk,
 	}
 }
 
@@ -22,10 +20,15 @@ func (r *RelatedField) getParams() []reflect.Value {
 	var params []reflect.Value
 
 	params = append(params, reflect.ValueOf(r.structField.Tag.Get("through")))
-	params = append(params, reflect.ValueOf(r.fk))
+	params = append(params, reflect.ValueOf(r.getFK()))
 
 	return params
 }
+
+func (r *RelatedField) getFK() interface{} {
+	return r.field.Interface()
+}
+
 
 func (r *RelatedField) FetchRelation(object interface{}) {
 	//Reflect object's value
