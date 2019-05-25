@@ -9,7 +9,7 @@ type AbstractOps struct {
 	SqlOps query.SQLOps
 }
 
-func (d *AbstractOps) Prepare(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...bool) {
+func (d *AbstractOps) Prepare(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...interface{}) {
 	d.SqlOps = *query.NewSQLOps(object, objectArray, db, extraOptions...)
 }
 

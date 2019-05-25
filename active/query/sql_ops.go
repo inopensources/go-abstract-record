@@ -17,7 +17,7 @@ type SQLOps struct {
 	optionsOps    options.OptionsOps
 }
 
-func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...bool) *SQLOps {
+func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...interface{}) *SQLOps {
 	sqlOps := SQLOps{}
 	sqlOps.composition = *NewCompositionOps(object)
 	sqlOps.Object = object
@@ -58,17 +58,12 @@ func (s *SQLOps) Select(values ...interface{}) error {
 	}
 
 	//If DeepQuery is set to true, the relationships are
-	//going to be loaded
+	//going to be eager loaded until MaxLevel is reached
 	if s.optionsOps.DeepQuery {
-		//Creating new relationship object
-		s.relationships = NewRelationshipOps(s.Object)
-
-		//Method below checks if the current object has got relationships
-		s.relationships.checkForRelationships()
-
-		s.relationships.fetchHasOneRelatedObjects()
-
-		s.relationships.fetchHasManyRelatedObjects()
+		//Method below checks if we're already too deep into the relationship /:
+		if !s.optionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
+			s.dealWithRelationships()
+		}
 	}
 
 	return err
@@ -86,6 +81,7 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	}
 
 	resultCount := 0
+
 	for rows.Next() {
 		err := rows.Scan(s.composition.pointerList...)
 		if err != nil {
@@ -97,17 +93,11 @@ func (s *SQLOps) Where(values ...interface{}) error {
 		//ATTENTION: This may slowdown your query, as a new SQL
 		//query will be created for every parent object returned
 		if s.optionsOps.DeepQuery {
-			//Creating new relationship object
-			s.relationships = NewRelationshipOps(s.Object)
-
-			//Method below checks if the current object has got relationships
-			s.relationships.checkForRelationships()
-
-			s.relationships.fetchHasOneRelatedObjects()
-
-			s.relationships.fetchHasManyRelatedObjects()
+			//Method below checks if we're already too deep into the relationship /:
+			if !s.optionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
+				s.dealWithRelationships()
+			}
 		}
-
 
 		valuePtr := reflect.ValueOf(s.ObjectArray)
 		value := valuePtr.Elem()
@@ -172,4 +162,29 @@ func (s *SQLOps) Update(values ...interface{}) error {
 
 func (s *SQLOps) GetComposition() *CompositionOps {
 	return &s.composition
+}
+
+func (s *SQLOps) dealWithRelationships() {
+	deepOptions := s.optionsOps
+	deepOptions.IncreaseCurrentLevel()
+
+	//In this case, we're checking if the level of the options
+	//we're passing down the rabbit hole is still valid
+	if deepOptions.CheckIfCurrentLevelBiggerThanMaxLevel() {
+		return
+	}
+
+	//Creating new relationship object
+	s.relationships = NewRelationshipOps(s.Object, deepOptions)
+
+	//Method below checks if the current object has got relationships
+	s.relationships.checkForRelationships()
+
+	if s.relationships.hasOne.RelatedFieldsPresent() {
+		s.relationships.fetchHasOneRelatedObjects()
+	}
+
+	if s.relationships.hasMany.RelatedFieldsPresent() {
+		s.relationships.fetchHasManyRelatedObjects()
+	}
 }

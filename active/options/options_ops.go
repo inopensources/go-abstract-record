@@ -1,21 +1,101 @@
 package options
 
+import (
+	"reflect"
+)
+
+const DeepQuery = 0
+const MaxLevel = 1
+const CurrentLevel = 2
+
 type OptionsOps struct {
 	// True: Every object is rendered with all of its relationships
 	// False: Objects are rendered without their relationships
-	DeepQuery bool
+	DeepQuery    bool
+	MaxLevel     int
+	CurrentLevel int
 }
 
 //Using variadic functions here, as it would be a bummer to pass
 //far too many values.
-func NewOptionsOps(extraOptions ...bool) OptionsOps {
+//Index | Param
+//  0   | DeepQuery
+//  1   | MaxLevel
+func NewOptionsOps(extraOptions ...interface{}) OptionsOps {
 	if extraOptions != nil {
-		return OptionsOps{
-			DeepQuery: extraOptions[0],
-		}
+		return OptionOpsFromExtraOptions(extraOptions...)
 	}
 
 	return OptionsOps{
-		DeepQuery: false,
+		DeepQuery:    false,
+		CurrentLevel: 0,
+		MaxLevel:     1,
 	}
+}
+
+func OptionOpsFromExtraOptions(extraOptions ...interface{}) OptionsOps {
+	var newOptionOps OptionsOps
+
+	newOptionOps.setDeepQueryFromInterface(extraOptions)
+	newOptionOps.setMaxLevelFromInterface(extraOptions)
+	newOptionOps.setCurrentLevelFromInterface(extraOptions)
+
+	return newOptionOps
+}
+
+func (o *OptionsOps) setDeepQueryFromInterface(extraOptions []interface{}) {
+	if o.validDepth(DeepQuery, extraOptions) {
+		o.DeepQuery = extraOptions[DeepQuery].(bool)
+	}
+}
+
+func (o *OptionsOps) setMaxLevelFromInterface(extraOptions []interface{}) {
+	if o.validDepth(MaxLevel, extraOptions) {
+		o.MaxLevel = extraOptions[MaxLevel].(int)
+	}
+}
+
+func (o *OptionsOps) setCurrentLevelFromInterface(extraOptions []interface{}) {
+	if o.validDepth(CurrentLevel, extraOptions) {
+		o.CurrentLevel = extraOptions[CurrentLevel].(int)
+	}
+}
+
+func (o  *OptionsOps) validDepth(level int, extraOptions []interface{}) bool {
+	if len(extraOptions) > level {
+		return true
+	}
+
+	return false
+}
+
+func (o *OptionsOps) getOptionsAsArray() []interface{} {
+	var values []interface{}
+	s := reflect.ValueOf(o).Elem()
+
+	for i := 0; i < s.NumField(); i++ {
+		values = append(values, s.Field(i).Interface())
+	}
+
+	return values
+}
+
+func (o *OptionsOps) GetOptionsAsArrayOfValues() (optionsAsValues []reflect.Value) {
+	for _, value := range o.getOptionsAsArray() {
+		optionsAsValues = append(optionsAsValues, reflect.ValueOf(value))
+	}
+
+	return optionsAsValues
+}
+
+func (o *OptionsOps) IncreaseCurrentLevel() {
+	o.CurrentLevel += 1
+}
+
+func (o *OptionsOps) CheckIfCurrentLevelBiggerThanMaxLevel() bool {
+	if o.CurrentLevel > o.MaxLevel {
+		return true
+	}
+
+	return false
 }

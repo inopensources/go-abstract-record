@@ -2,22 +2,22 @@ package query
 
 import (
 	"fmt"
-	"github.com/infarmasistemas/go-abstract-record/active/query/relationships/has_many"
-	"github.com/infarmasistemas/go-abstract-record/active/query/relationships/has_one"
+	"github.com/infarmasistemas/go-abstract-record/active/options"
+	"github.com/infarmasistemas/go-abstract-record/active/query/relationships"
 	"reflect"
 )
 
 type RelationshipOps struct {
 	object  interface{}
-	hasOne  has_one.HasOne
-	hasMany has_many.HasMany
+	hasOne  relationships.RelationshipInterface
+	hasMany relationships.RelationshipInterface
 }
 
-func NewRelationshipOps(object interface{}) RelationshipOps {
+func NewRelationshipOps(object interface{}, options options.OptionsOps) RelationshipOps {
 	return RelationshipOps{
-		object: object,
-		hasOne: has_one.NewHasOne(object),
-		hasMany: has_many.NewHasMany(object),
+		object:  object,
+		hasOne:  relationships.NewRelationshipInterface(object, options),
+		hasMany: relationships.NewRelationshipInterface(object, options),
 	}
 }
 
@@ -27,26 +27,23 @@ func (r *RelationshipOps) checkForRelationships() {
 
 	for i := 0; i < s.NumField(); i++ {
 		field := typeOfT.Field(i)
+
 		if value, presenceHasOne := r.hasOne.CheckPresenceOfHasOneRelationship(field); presenceHasOne {
 			fmt.Println("Has one", value)
-			r.hasOne.AddRelatedField(field, s.Field(i))
+			r.hasOne.AddRelatedField(relationships.NewFieldInterface(r.object, field, "has_one"))
 		}
 
 		if value, presenceHasMany := r.hasMany.CheckPresenceOfHasManyRelationship(field); presenceHasMany {
 			fmt.Println("Has many", value)
-			r.hasMany.AddRelatedField(field, s.Field(i))
+			r.hasMany.AddRelatedField(relationships.NewFieldInterface(r.object, field, "has_many"))
 		}
 	}
 }
 
 func (r *RelationshipOps) fetchHasOneRelatedObjects() {
-	if r.hasOne.RelatedFieldsPresent() {
-		r.hasOne.FetchRelatedObjects()
-	}
+	r.hasOne.FetchRelatedObjectsForHasOne()
 }
 
 func (r *RelationshipOps) fetchHasManyRelatedObjects() {
-	if r.hasMany.RelatedFieldsPresent() {
-		r.hasMany.FetchRelatedObjects()
-	}
+	r.hasMany.FetchRelatedObjectsForHasMany()
 }
