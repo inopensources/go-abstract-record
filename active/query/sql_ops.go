@@ -19,7 +19,7 @@ type SQLOps struct {
 
 func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...interface{}) *SQLOps {
 	sqlOps := SQLOps{}
-	sqlOps.composition = *NewCompositionOps(object)
+	sqlOps.composition = *NewCompositionOps(object, extraOptions...)
 	sqlOps.Object = object
 	sqlOps.ObjectArray = objectArray
 	sqlOps.Db = db
@@ -41,7 +41,7 @@ func (s *SQLOps) Select(values ...interface{}) error {
 
 	resultCount := 0
 	for rows.Next() {
-		err := rows.Scan(s.composition.pointerList...)
+		err := rows.Scan(s.composition.objecto.PointerList...)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	resultCount := 0
 
 	for rows.Next() {
-		err := rows.Scan(s.composition.pointerList...)
+		err := rows.Scan(s.composition.objecto.PointerList...)
 		if err != nil {
 			fmt.Println(err)
 		}

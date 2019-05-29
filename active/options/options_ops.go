@@ -1,19 +1,22 @@
 package options
 
 import (
+	"github.com/infarmasistemas/go-abstract-record/active/helpers"
 	"reflect"
 )
 
 const DeepQuery = 0
 const MaxLevel = 1
 const CurrentLevel = 2
+const QueryCustomFields = 3
 
 type OptionsOps struct {
 	// True: Every object is rendered with all of its relationships
 	// False: Objects are rendered without their relationships
-	DeepQuery    bool
-	MaxLevel     int
-	CurrentLevel int
+	DeepQuery         bool
+	MaxLevel          int
+	CurrentLevel      int
+	QueryCustomFields helpers.Limit
 }
 
 //Using variadic functions here, as it would be a bummer to pass
@@ -27,9 +30,10 @@ func NewOptionsOps(extraOptions ...interface{}) OptionsOps {
 	}
 
 	return OptionsOps{
-		DeepQuery:    false,
-		CurrentLevel: 0,
-		MaxLevel:     1,
+		DeepQuery:         false,
+		CurrentLevel:      0,
+		MaxLevel:          1,
+		QueryCustomFields: helpers.NewLimit(),
 	}
 }
 
@@ -39,6 +43,7 @@ func OptionOpsFromExtraOptions(extraOptions ...interface{}) OptionsOps {
 	newOptionOps.setDeepQueryFromInterface(extraOptions)
 	newOptionOps.setMaxLevelFromInterface(extraOptions)
 	newOptionOps.setCurrentLevelFromInterface(extraOptions)
+	newOptionOps.setQueryCustomFieldsFromInterface(extraOptions)
 
 	return newOptionOps
 }
@@ -61,7 +66,13 @@ func (o *OptionsOps) setCurrentLevelFromInterface(extraOptions []interface{}) {
 	}
 }
 
-func (o  *OptionsOps) validDepth(level int, extraOptions []interface{}) bool {
+func (o *OptionsOps) setQueryCustomFieldsFromInterface(extraOptions []interface{}) {
+	if o.validDepth(QueryCustomFields, extraOptions) {
+		o.QueryCustomFields = extraOptions[QueryCustomFields].(helpers.Limit)
+	}
+}
+
+func (o *OptionsOps) validDepth(level int, extraOptions []interface{}) bool {
 	if len(extraOptions) > level {
 		return true
 	}
@@ -95,6 +106,36 @@ func (o *OptionsOps) IncreaseCurrentLevel() {
 func (o *OptionsOps) CheckIfCurrentLevelBiggerThanMaxLevel() bool {
 	if o.CurrentLevel > o.MaxLevel {
 		return true
+	}
+
+	return false
+}
+
+func (o *OptionsOps) CheckIfCustomFieldsAreFromThisTable(tableName string) bool {
+	if o.QueryCustomFields.GetLimits()[tableName] != nil {
+		return true
+	}
+
+	return false
+}
+
+func (o *OptionsOps) QueryCustomFieldsPresent() bool {
+	if o.QueryCustomFields.Valid() {
+		return true
+	}
+
+	return false
+}
+
+func (o *OptionsOps) QueryCustomFieldsAsSlice(tableName string) []string {
+	return o.QueryCustomFields.GetLimits()[tableName]
+}
+
+func (o *OptionsOps) FieldsPresentInQueryCustomFields(tableName, fieldName string) bool {
+	for _, value := range o.QueryCustomFieldsAsSlice(tableName) {
+		if value == fieldName {
+			return true
+		}
 	}
 
 	return false

@@ -2,38 +2,39 @@ package query
 
 import (
 	"fmt"
+	"github.com/infarmasistemas/go-abstract-record/active/options"
 	"github.com/infarmasistemas/go-abstract-record/active/query/composer"
-	"reflect"
-	"strings"
+	objecto "github.com/infarmasistemas/go-abstract-record/active/query/object"
 )
 
 type CompositionOps struct {
-	table            string
-	attributesGar    []string
-	attributesJson   map[string]string
-	attributesValues []interface{}
-	pointerList      []interface{}
-	queryValues      []interface{}
-	object           interface{}
-	composer         composer.Composer
+	objecto  objecto.Object
+	composer composer.Composer
+	options  options.OptionsOps
 }
 
-func NewCompositionOps(object interface{}) *CompositionOps {
+func NewCompositionOps(object interface{}, extraOptions ...interface{}) *CompositionOps {
 	newCompositionOps := CompositionOps{}
-	newCompositionOps.discoverTable(object)
-	newCompositionOps.discoverAttributesAndpointerList(object)
 	newCompositionOps.composer = composer.NewComposer()
-	newCompositionOps.object = object
+	newCompositionOps.objecto = objecto.NewObject(object, extraOptions...)
+	newCompositionOps.options = options.NewOptionsOps(extraOptions...)
 
 	return &newCompositionOps
 }
 
 func (c *CompositionOps) Select(values ...interface{}) (query string, pointerList []interface{}) {
-	c.composer.Selec.AddColumn(c.attributesAsColumnNames()...)
-	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
+	if c.options.CheckIfCustomFieldsAreFromThisTable(c.objecto.Table) {
+		if c.options.QueryCustomFieldsPresent() {
+			c.composer.Selec.AddColumn(c.options.QueryCustomFieldsAsSlice(c.objecto.Table)...)
+		}
+	} else {
+		c.composer.Selec.AddColumn(c.objecto.AttributesAsColumnNames()...)
+	}
+
+	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.objecto.Table))
 
 	if len(values) > 0 {
-		c.composer.Where.AddCondition(c.conditions(values...)...)
+		c.composer.Where.AddCondition(c.objecto.Conditions(values...)...)
 		for i := range values {
 			if i%2 != 0 {
 				//c.composer.AddValues(values[i])
@@ -46,24 +47,24 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 }
 
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
-	c.composer.Insert.AddColumn(c.attributesAsColumnNames()...)
-	c.composer.Insert.AddTableName(fmt.Sprintf("dmd.dbo.%s ", c.table))
-	c.composer.Insert.AddValues(c.attributeValuesAsArray()...)
+	c.composer.Insert.AddColumn(c.objecto.AttributesAsColumnNames()...)
+	c.composer.Insert.AddTableName(fmt.Sprintf("dmd.dbo.%s ", c.objecto.Table))
+	c.composer.Insert.AddValues(c.objecto.AttributeValuesAsArray()...)
 
 	return c.composer.BuildQuery()
 }
 
 func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	c.composer.Delete.Call()
-	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
-	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
-	c.composer.Where.AddValues(c.attributeValuesAsArray()...)
+	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.objecto.Table))
+	c.composer.Where.AddCondition(c.objecto.AttributesAsColumnNames()...)
+	c.composer.Where.AddValues(c.objecto.AttributeValuesAsArray()...)
 
 	return c.composer.BuildQuery()
 }
 
 func (c *CompositionOps) Update(values ...interface{}) (query string, pointerList []interface{}) {
-	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.table))
+	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.objecto.Table))
 
 	for index, colName := range values {
 		if index%2 == 0 {
@@ -73,101 +74,14 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 		}
 	}
 
-	c.composer.Where.AddCondition(c.attributesAsColumnNames()...)
-	c.composer.Where.AddValues(c.attributesValues...)
+	c.composer.Where.AddCondition(c.objecto.AttributesAsColumnNames()...)
+	c.composer.Where.AddValues(c.objecto.AttributesValues...)
 
 	return c.composer.BuildQuery()
 }
 
-func (c *CompositionOps) discoverTable(object interface{}) {
-	c.table = strings.Split(reflect.TypeOf(object).String(), ".")[len(strings.Split(reflect.TypeOf(object).String(), "."))-1]
-}
-
-func (c *CompositionOps) discoverAttributesAndpointerList(object interface{}) {
-	var attributeListGar []string
-
-	var fieldList []interface{}
-	var attributeValues []interface{}
-
-	c.attributesJson = make(map[string]string, 0)
-
-	s := reflect.ValueOf(object).Elem()
-	typeOfT := s.Type()
-
-	for i := 0; i < s.NumField(); i++ {
-		finalGar, finalJson := c.parseJsonGar(typeOfT.Field(i))
-
-		if len(finalGar) > 0 && len(finalJson) > 0 {
-			someField := s.Field(i)
-
-			fieldList = append(fieldList, someField.Addr().Interface())
-			attributeListGar = append(attributeListGar, finalGar)
-			c.attributesJson[finalJson] = finalGar
-
-			attributeValues = append(attributeValues, someField.Interface())
-		}
-	}
-
-	c.attributesGar = attributeListGar
-	c.pointerList = fieldList
-	c.attributesValues = attributeValues
-}
-
-func (c *CompositionOps) parseJsonGar(field reflect.StructField) (string, string) {
-	var finalGar, finalJson string
-
-	//Rel is present, therefore it is a relationship model
-	if _, presence := field.Tag.Lookup("rel"); presence {
-		return finalGar, finalJson
-	}
-
-	finalJson = field.Tag.Get("json")
-	finalGar = field.Tag.Get("gar")
-
-	return finalGar, finalJson
-}
-
-func (c *CompositionOps) attributesAsColumnNames() []string {
-	var columns []string
-	for _, attributeName := range c.attributesGar {
-		columns = append(columns, attributeName)
-	}
-
-	return columns
-}
-
-func (c *CompositionOps) attributeValuesAsArray() []interface{} {
-	var values []interface{}
-	for _, value := range c.attributesValues {
-		if reflect.ValueOf(value).Elem().IsValid() {
-			values = append(values, reflect.ValueOf(value).Elem().Interface())
-		} else {
-			values = append(values, nil)
-		}
-	}
-
-	return values
-}
-
-func (c *CompositionOps) conditions(values ...interface{}) []string {
-	var queryValues []interface{}
-
-	var conditions []string
-
-	for i, condition := range values {
-		if i%2 == 0 {
-			conditions = append(conditions, fmt.Sprintf("%s", condition))
-		} else {
-			queryValues = append(queryValues, condition)
-		}
-	}
-
-	c.queryValues = queryValues
-	return conditions
-}
-
 func (c *CompositionOps) getPointerList() []interface{} {
-	return c.pointerList
+	return c.objecto.PointerList
 }
 
 func (c *CompositionOps) quotedOrNot(value interface{}) string {
@@ -187,5 +101,5 @@ func (c *CompositionOps) GetComposer() *composer.Composer {
 }
 
 func (c *CompositionOps) getRealColName(value string) string {
-	return c.attributesJson[value]
+	return c.objecto.AttributesJson[value]
 }
