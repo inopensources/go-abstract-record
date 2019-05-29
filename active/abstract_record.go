@@ -6,6 +6,7 @@ import (
 	"github.com/infarmasistemas/go-abstract-record/active/check"
 	"github.com/infarmasistemas/go-abstract-record/active/instance"
 	"github.com/infarmasistemas/go-abstract-record/active/query/post_funcs"
+	"github.com/infarmasistemas/go-abstract-record/active/utils/logger"
 )
 
 type AbstractRecord struct {
@@ -15,6 +16,7 @@ type AbstractRecord struct {
 }
 
 func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...interface{}) *AbstractRecord {
+	logger.NewLogger().Info("STARTING ENGINES")
 	abstract := AbstractRecord{}
 	abstract.abstractOps.Prepare(object, objectArray, db, extraOptions...)
 	abstract.instanceOps.Prepare(object, objectArray)
@@ -22,30 +24,44 @@ func NewAbstractRecord(object interface{}, objectArray interface{}, db *sql.DB, 
 }
 
 func (e *AbstractRecord) All() error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.abstractOps.All()
 }
 
 func (e *AbstractRecord) Find(values ...interface{}) error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.checkOps.CheckAndExecute(e.abstractOps.Find, values...)
 }
 
 func (e *AbstractRecord) Where(values ...interface{}) error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.checkOps.CheckAndExecute(e.abstractOps.Where, values...)
 }
 
 func (e *AbstractRecord) New(values ...interface{}) error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.checkOps.TreatEntry(e.instanceOps.NewSingle, e.instanceOps.NewArray, values...)
 }
 
 func (e *AbstractRecord) Save() error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.abstractOps.Save()
 }
 
 func (e *AbstractRecord) Delete() error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.abstractOps.Delete()
 }
 
 func (e *AbstractRecord) Update(values ...interface{}) error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
 	return e.checkOps.TreatValuesForUpdate(e.abstractOps.Update, values...)
 }
 
