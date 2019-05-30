@@ -1,6 +1,7 @@
 package object
 
 import (
+	"errors"
 	"fmt"
 	"github.com/infarmasistemas/go-abstract-record/active/options"
 	"reflect"
@@ -148,4 +149,12 @@ func (o *Object) buildPointerListAndAttributes() {
 	o.AttributesGar = attributeListGar
 	o.PointerList = fieldList
 	o.AttributesValues = attributeValues
+}
+
+func (o *Object) GetRealColName(value string) (string, error) {
+	if len(o.AttributesJson[value]) == 0 {
+		return "", errors.New("field not found")
+	}
+
+	return o.AttributesJson[value], nil
 }

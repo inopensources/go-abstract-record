@@ -66,11 +66,14 @@ func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 func (c *CompositionOps) Update(values ...interface{}) (query string, pointerList []interface{}) {
 	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.objecto.Table))
 
-	for index, colName := range values {
-		if index%2 == 0 {
-			c.composer.Set.AddColumn(c.getRealColName(fmt.Sprint(colName)))
-		} else {
-			c.composer.Set.AddValues(colName)
+	for index := 0; index < len(values); index += 2 {
+		colName := fmt.Sprint(values[index])
+
+		if colName, err := c.objecto.GetRealColName(colName); err == nil {
+			c.composer.Set.AddColumn(colName)
+
+			passedValue := values[index+1]
+			c.composer.Set.AddValues(passedValue)
 		}
 	}
 
