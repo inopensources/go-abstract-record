@@ -29,6 +29,14 @@ func (e *AbstractRecord) All() error {
 	return e.abstractOps.All()
 }
 
+
+func (e *AbstractRecord) Count() (int, error) {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
+	return e.abstractOps.Count()
+}
+
+
 func (e *AbstractRecord) Find(values ...interface{}) error {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
 

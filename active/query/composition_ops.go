@@ -45,6 +45,23 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 	return c.composer.BuildQuery()
 }
 
+func (c *CompositionOps) Count(values ...interface{}) (query string, pointerList []interface{}) {
+	c.composer.Count.AddColumn("*")
+
+	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.CollectionOfAttributes.Table))
+
+	if len(values) > 0 {
+		c.composer.Where.AddCondition(c.CollectionOfAttributes.Conditions(values...)...)
+		for i := range values {
+			if i%2 != 0 {
+				c.composer.Where.AddValues(values[i])
+			}
+		}
+	}
+
+	return c.composer.BuildQuery()
+}
+
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
 	c.composer.Insert.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNames()...)
 	c.composer.Insert.AddTableName(fmt.Sprintf("dmd.dbo.%s ", c.CollectionOfAttributes.Table))

@@ -17,6 +17,10 @@ func (d *AbstractOps) All() error {
 	return d.SqlOps.Where()
 }
 
+func (d *AbstractOps) Count(values ...interface{}) (int, error) {
+	return d.SqlOps.Count(values...)
+}
+
 func (d *AbstractOps) Find(values ...interface{}) error {
 	return d.SqlOps.Select(values...)
 }

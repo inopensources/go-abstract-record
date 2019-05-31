@@ -6,6 +6,7 @@ import (
 
 type Composer struct {
 	Selec      Select
+	Count      Count
 	Update     Update
 	Delete     Delete
 	From       From
@@ -18,6 +19,7 @@ type Composer struct {
 func NewComposer() Composer {
 	composer := Composer{}
 	composer.Selec = NewSelect()
+	composer.Count = NewCount()
 	composer.Insert = NewInsert()
 	composer.Update = NewUpdate()
 	composer.Delete = NewDelete()
@@ -36,6 +38,10 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 
 	if c.Selec.Valid() {
 		sb.WriteString(c.Selec.Build())
+	}
+
+	if c.Count.Valid() {
+		sb.WriteString(c.Count.Build())
 	}
 
 	if c.Update.Valid() {
