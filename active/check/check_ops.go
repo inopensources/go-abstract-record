@@ -15,7 +15,7 @@ func (a *CheckOps) CheckAndExecute(function func(finalValues ...interface{}) err
 	if len(values) == 1 {
 		// If a JSON is coming in...
 		if json_ops.New(values[0]).IsJSON() {
-			//Check if JSON contains more than one object
+			//Check if JSON contains more than one collection_of_attributes
 
 			finalValues, err := json_ops.New(values[0]).GetBodyAsValues()
 			if err != nil {

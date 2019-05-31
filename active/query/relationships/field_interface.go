@@ -22,7 +22,7 @@ func NewFieldInterface(object interface{}, field reflect.StructField, relationsh
 	fieldInterface.sliceOfVia = strings.Split(field.Tag.Get("via"), ":")
 
 	//if _, customFieldsPresent := field.Tag.Lookup("only"); customFieldsPresent {
-	//	objectInterface := NewObjectInterface(object)
+	//	objectInterface := NewObjectInterface(collection_of_attributes)
 	//	relatedObject := objectInterface.NewObjectFromFieldNameType(fieldInterface.FieldName).Interface()
 	//
 	//	someMap := make(map[string][]string, 0)

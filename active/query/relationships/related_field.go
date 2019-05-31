@@ -33,7 +33,7 @@ func (r *RelatedField) FetchRelationForSingleValue(object interface{}, options o
 		return
 	}
 
-	//Create new object of said type
+	//Create new collection_of_attributes of said type
 	maNew := objectInterface.NewObjectFromFieldNameType(r.fieldInterface.FieldName)
 
 	if len(r.fieldInterface.mapOfOnly) > 0 {
@@ -49,7 +49,7 @@ func (r *RelatedField) FetchRelationForSingleValue(object interface{}, options o
 
 	findMethod.Call(values)
 
-	//Write object to field specified via the through tag
+	//Write collection_of_attributes to field specified via the through tag
 	objectInterface.SetFieldValueByName(r.fieldInterface.FieldName, maNew)
 }
 
@@ -57,7 +57,7 @@ func (r *RelatedField) FetchRelationForSliceValue(object interface{}, options op
 	objectInterface := NewObjectInterface(object)
 
 	//The guard clause below checks if a given parent
-	//object contains valid values to be used as params
+	//collection_of_attributes contains valid values to be used as params
 	// for the child query
 	values, valid := r.fieldInterface.GetParams()
 	if !valid {
@@ -66,7 +66,7 @@ func (r *RelatedField) FetchRelationForSliceValue(object interface{}, options op
 
 	fieldName := r.fieldInterface.FieldName
 
-	//Create new object of said type
+	//Create new collection_of_attributes of said type
 	maNew := objectInterface.NewObjectFromFieldNameTypeForSlices(fieldName)
 
 	originalSlice := objectInterface.NewSliceFromFieldTypeForSlices(fieldName)
@@ -85,6 +85,6 @@ func (r *RelatedField) FetchRelationForSliceValue(object interface{}, options op
 
 	findMethod.Call(values)
 
-	//Write object to field specified via the through tag
+	//Write collection_of_attributes to field specified via the through tag
 	objectInterface.SetFieldValueByName(fieldName, sliceOfType)
 }

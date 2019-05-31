@@ -11,7 +11,7 @@ const CurrentLevel = 2
 const QueryCustomFields = 3
 
 type OptionsOps struct {
-	// True: Every object is rendered with all of its relationships
+	// True: Every collection_of_attributes is rendered with all of its relationships
 	// False: Objects are rendered without their relationships
 	DeepQuery         bool
 	MaxLevel          int

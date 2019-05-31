@@ -41,7 +41,7 @@ func (s *SQLOps) Select(values ...interface{}) error {
 
 	resultCount := 0
 	for rows.Next() {
-		err := rows.Scan(s.composition.objecto.PointerList...)
+		err := rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributes()...)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	resultCount := 0
 
 	for rows.Next() {
-		err := rows.Scan(s.composition.objecto.PointerList...)
+		err := rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributes()...)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -91,7 +91,7 @@ func (s *SQLOps) Where(values ...interface{}) error {
 		//If DeepQuery is set to true, the relationships are
 		//going to be loaded
 		//ATTENTION: This may slowdown your query, as a new SQL
-		//query will be created for every parent object returned
+		//query will be created for every parent collection_of_attributes returned
 		if s.optionsOps.DeepQuery {
 			//Method below checks if we're already too deep into the relationship /:
 			if !s.optionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
@@ -174,10 +174,10 @@ func (s *SQLOps) dealWithRelationships() {
 		return
 	}
 
-	//Creating new relationship object
+	//Creating new relationship collection_of_attributes
 	s.relationships = NewRelationshipOps(s.Object, deepOptions)
 
-	//Method below checks if the current object has got relationships
+	//Method below checks if the current collection_of_attributes has got relationships
 	s.relationships.checkForRelationships()
 
 	if s.relationships.hasOne.RelatedFieldsPresent() {
