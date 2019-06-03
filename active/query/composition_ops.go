@@ -72,7 +72,7 @@ func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
 	c.composer.Insert.AddTableName(fmt.Sprintf("%s ", c.CollectionOfAttributes.Table))
 
 	for _, colName := range c.CollectionOfAttributes.AttributesAsColumnNamesForInsert() {
-		c.composer.Insert.AddValues(c.CollectionOfAttributes.AttributeFromColumnName(colName))
+		c.composer.Insert.AddValues(c.CollectionOfAttributes.AttributeValueFromColumnName(colName))
 	}
 
 	return c.composer.BuildQuery()
@@ -85,7 +85,7 @@ func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
 
 	for _, colName := range c.CollectionOfAttributes.AttributesAsColumnNamesForInsert() {
-		c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeFromColumnName(colName))
+		c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeValueFromColumnName(colName))
 	}
 
 	return c.composer.BuildQuery()

@@ -95,6 +95,19 @@ func (a *CollectionOfAttributes) AttributeFromColumnName(columnName string) (poi
 	return pointerToAttribute
 }
 
+func (a *CollectionOfAttributes) AttributeValueFromColumnName(columnName string) (attributeValue interface{}) {
+	for _, attribute := range a.CollectionOfAttributes {
+		if !attribute.RelTagPresent() && attribute.garTagWithoutLimits() == columnName {
+			if value, err := attribute.Interface(); err == nil {
+				attributeValue = value
+			}
+		}
+	}
+
+	return attributeValue
+}
+
+
 func (a *CollectionOfAttributes) AttributeValuesAsSlice() (pointerList []interface{}) {
 	for _, attribute := range a.CollectionOfAttributes {
 		if !attribute.RelTagPresent() {
