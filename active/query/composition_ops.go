@@ -28,10 +28,15 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 			c.composer.Selec.AddColumn(c.options.QueryCustomFieldsAsSlice(c.CollectionOfAttributes.Table)...)
 		}
 	} else {
-		c.composer.Selec.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNames()...)
+		c.composer.Selec.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNamesForSelect()...)
 	}
 
-	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.CollectionOfAttributes.Table))
+	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
+
+	if c.CollectionOfAttributes.InnerJoinPresent() {
+		c.composer.Join.SetParentTable(c.CollectionOfAttributes.Table)
+		c.composer.Join.SetChildTables(c.CollectionOfAttributes.TableChild...)
+	}
 
 	if len(values) > 0 {
 		c.composer.Where.AddCondition(c.CollectionOfAttributes.Conditions(values...)...)
@@ -48,7 +53,7 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 func (c *CompositionOps) Count(values ...interface{}) (query string, pointerList []interface{}) {
 	c.composer.Count.AddColumn("*")
 
-	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.CollectionOfAttributes.Table))
+	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
 
 	if len(values) > 0 {
 		c.composer.Where.AddCondition(c.CollectionOfAttributes.Conditions(values...)...)
@@ -63,24 +68,31 @@ func (c *CompositionOps) Count(values ...interface{}) (query string, pointerList
 }
 
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
-	c.composer.Insert.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNames()...)
-	c.composer.Insert.AddTableName(fmt.Sprintf("dmd.dbo.%s ", c.CollectionOfAttributes.Table))
-	c.composer.Insert.AddValues(c.CollectionOfAttributes.AttributeValuesAsArray()...)
+	c.composer.Insert.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
+	c.composer.Insert.AddTableName(fmt.Sprintf("%s ", c.CollectionOfAttributes.Table))
+
+	for _, colName := range c.CollectionOfAttributes.AttributesAsColumnNamesForInsert() {
+		c.composer.Insert.AddValues(c.CollectionOfAttributes.AttributeFromColumnName(colName))
+	}
 
 	return c.composer.BuildQuery()
 }
 
 func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	c.composer.Delete.Call()
-	c.composer.From.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.CollectionOfAttributes.Table))
-	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNames()...)
-	c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeValuesAsArray()...)
+	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
+
+	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
+
+	for _, colName := range c.CollectionOfAttributes.AttributesAsColumnNamesForInsert() {
+		c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeFromColumnName(colName))
+	}
 
 	return c.composer.BuildQuery()
 }
 
 func (c *CompositionOps) Update(values ...interface{}) (query string, pointerList []interface{}) {
-	c.composer.Update.AddTableName(fmt.Sprintf("dmd.dbo.%s", c.CollectionOfAttributes.Table))
+	c.composer.Update.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
 
 	for index := 0; index < len(values); index += 2 {
 		colName := fmt.Sprint(values[index])
@@ -93,7 +105,7 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 		}
 	}
 
-	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNames()...)
+	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
 	c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeValuesAsSlice()...)
 
 	return c.composer.BuildQuery()

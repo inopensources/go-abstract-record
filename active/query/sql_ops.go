@@ -41,7 +41,10 @@ func (s *SQLOps) Select(values ...interface{}) error {
 
 	resultCount := 0
 	for rows.Next() {
-		err := rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributes()...)
+		//fmt.Print(rows.Columns())
+		//colNames, err := rows.Columns()
+
+		err = rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributes()...)
 		if err != nil {
 			return err
 		}
@@ -179,26 +182,28 @@ func (s *SQLOps) GetComposition() *CompositionOps {
 }
 
 func (s *SQLOps) dealWithRelationships() {
-	deepOptions := s.optionsOps
-	deepOptions.IncreaseCurrentLevel()
+	return
+	//deepOptions := s.optionsOps
+	//deepOptions.IncreaseCurrentLevel()
 
 	//In this case, we're checking if the level of the options
 	//we're passing down the rabbit hole is still valid
-	if deepOptions.CheckIfCurrentLevelBiggerThanMaxLevel() {
-		return
-	}
+	//if deepOptions.CheckIfCurrentLevelBiggerThanMaxLevel() {
+	//	return
+	//}
 
 	//Creating new relationship collection_of_attributes
-	s.relationships = NewRelationshipOps(s.Object, deepOptions)
+	//s.relationships = NewRelationshipOps(s.Object, deepOptions)
 
 	//Method below checks if the current collection_of_attributes has got relationships
-	s.relationships.checkForRelationships()
+	//s.relationships.checkForRelationships()
 
-	if s.relationships.hasOne.RelatedFieldsPresent() {
-		s.relationships.fetchHasOneRelatedObjects()
-	}
+	//Deep query deactivated
+	//if s.relationships.hasOne.RelatedFieldsPresent() {
+	//	s.relationships.fetchHasOneRelatedObjects()
+	//}
 
-	if s.relationships.hasMany.RelatedFieldsPresent() {
-		s.relationships.fetchHasManyRelatedObjects()
-	}
+	//if s.relationships.hasMany.RelatedFieldsPresent() {
+	//	s.relationships.fetchHasManyRelatedObjects()
+	//}
 }

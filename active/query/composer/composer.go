@@ -5,15 +5,16 @@ import (
 )
 
 type Composer struct {
-	Selec      Select
-	Count      Count
-	Update     Update
-	Delete     Delete
-	From       From
-	Set        Set
-	Where      Where
-	Insert     Insert
-	PostQuery  PostQuery
+	Selec     Select
+	Count     Count
+	Update    Update
+	Delete    Delete
+	From      From
+	Join      Join
+	Set       Set
+	Where     Where
+	Insert    Insert
+	PostQuery PostQuery
 }
 
 func NewComposer() Composer {
@@ -25,6 +26,7 @@ func NewComposer() Composer {
 	composer.Delete = NewDelete()
 
 	composer.From = NewFrom()
+	composer.Join = NewJoin()
 
 	composer.Set = NewSet()
 	composer.Where = NewWhere()
@@ -54,6 +56,10 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 
 	if c.From.Valid() {
 		sb.WriteString(c.From.Build())
+	}
+
+	if c.Join.Valid() {
+		sb.WriteString(c.Join.Build())
 	}
 
 	if c.Set.Valid() {
