@@ -107,7 +107,6 @@ func (a *CollectionOfAttributes) AttributeValueFromColumnName(columnName string)
 	return attributeValue
 }
 
-
 func (a *CollectionOfAttributes) AttributeValuesAsSlice() (pointerList []interface{}) {
 	for _, attribute := range a.CollectionOfAttributes {
 		if !attribute.RelTagPresent() {
@@ -140,10 +139,29 @@ func (a *CollectionOfAttributes) AttributesAsColumnNamesForSelect() (columns []s
 	return columns
 }
 
-func (a *CollectionOfAttributes) AttributesAsColumnNamesForInsert() (columns []string) {
+func (a *CollectionOfAttributes) AttributesAsColumnNamesForDelete() (columns []string) {
+	return a.AttributesAsColumnNamesForUpdate()
+}
+
+func (a *CollectionOfAttributes) AttributesAsColumnNamesForUpdate() (columns []string) {
 	for _, attribute := range a.CollectionOfAttributes {
 		if garTag := attribute.GarTag(); garTag != "" {
 
+			//If cast is present...
+			if _, presence := attribute.StructField.Tag.Lookup("cast"); presence {
+				columns = append(columns, fmt.Sprintf("CAST(%s AS VARCHAR(MAX))", attribute.GarTag())) //INSERT
+			} else {
+				columns = append(columns, garTag) //INSERT
+			}
+		}
+	}
+
+	return columns
+}
+
+func (a *CollectionOfAttributes) AttributesAsColumnNamesForInsert() (columns []string) {
+	for _, attribute := range a.CollectionOfAttributes {
+		if garTag := attribute.GarTag(); garTag != "" {
 			columns = append(columns, garTag) //INSERT
 		}
 	}

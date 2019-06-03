@@ -82,7 +82,7 @@ func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	c.composer.Delete.Call()
 	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
 
-	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
+	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForDelete ()...)
 
 	for _, colName := range c.CollectionOfAttributes.AttributesAsColumnNamesForInsert() {
 		c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeValueFromColumnName(colName))
@@ -98,6 +98,7 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 		colName := fmt.Sprint(values[index])
 
 		if colName, err := c.CollectionOfAttributes.RealColName(colName); err == nil {
+			fmt.Println(colName)
 			c.composer.Set.AddColumn(colName)
 
 			passedValue := values[index+1]
@@ -105,7 +106,7 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 		}
 	}
 
-	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
+	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForUpdate()...)
 	c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeValuesAsSlice()...)
 
 	return c.composer.BuildQuery()
