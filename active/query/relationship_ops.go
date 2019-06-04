@@ -28,10 +28,10 @@ func (r *RelationshipOps) checkForRelationships() {
 	for i := 0; i < s.NumField(); i++ {
 		field := typeOfT.Field(i)
 
-		if value, presenceHasOne := r.hasOne.CheckPresenceOfHasOneRelationship(field); presenceHasOne {
-			fmt.Println("Has one", value)
-			r.hasOne.AddRelatedField(relationships.NewFieldInterface(r.object, field, "has_one"))
-		}
+		//if value, presenceHasOne := r.hasOne.CheckPresenceOfHasOneRelationship(field); presenceHasOne {
+		//	fmt.Println("Has one", value)
+		//	r.hasOne.AddRelatedField(relationships.NewFieldInterface(r.object, field, "has_one"))
+		//}
 
 		if value, presenceHasMany := r.hasMany.CheckPresenceOfHasManyRelationship(field); presenceHasMany {
 			fmt.Println("Has many", value)

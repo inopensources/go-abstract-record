@@ -41,6 +41,10 @@ func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{},
 	for i := 0; i < value.NumField(); i++ {
 		attributes = append(attributes, NewAttribute(table, value.Field(i), typeOfT.Field(i), extraOptions...))
 
+		if a.options.CheckIfCurrentLevelBiggerThanMaxLevel() {
+			return
+		}
+
 		if a.options.DeepQuery {
 			if _, present := typeOfT.Field(i).Tag.Lookup("rel"); present {
 				//Instantiate a new object from a nil related pointer

@@ -98,7 +98,7 @@ func (c *CompositionOps) Update(values ...interface{}) (query string, pointerLis
 		colName := fmt.Sprint(values[index])
 
 		if colName, err := c.CollectionOfAttributes.RealColName(colName); err == nil {
-			fmt.Println(colName)
+			//fmt.Println(colName)
 			c.composer.Set.AddColumn(colName)
 
 			passedValue := values[index+1]

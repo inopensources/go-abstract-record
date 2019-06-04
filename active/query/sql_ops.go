@@ -34,17 +34,25 @@ func (s *SQLOps) Select(values ...interface{}) error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	rows, err := s.Db.Query(query, queryValues...)
+	stmt, err := s.Db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(queryValues...)
 	if err != nil {
 		return err
 	}
 
+	defer rows.Close()
+
 	resultCount := 0
 	for rows.Next() {
 		//fmt.Print(rows.Columns())
-		//colNames, err := rows.Columns()
+		colNames, err := rows.Columns()
 
-		err = rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributes()...)
+		err = rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributesFromColumnNames(colNames...)...)
 		if err != nil {
 			return err
 		}
@@ -78,10 +86,18 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	rows, err := s.Db.Query(query, queryValues...)
+	stmt, err := s.Db.Prepare(query)
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(queryValues...)
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
 
 	resultCount := 0
 
@@ -118,7 +134,13 @@ func (s *SQLOps) Insert() error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.Db.Exec(query, queryValues...)
+	stmt, err := s.Db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(queryValues...)
 	if err != nil {
 		return err
 	}
@@ -135,7 +157,13 @@ func (s *SQLOps) Delete() error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.Db.Exec(query, queryValues...)
+	stmt, err := s.Db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(queryValues...)
 	if err != nil {
 		return err
 	}
@@ -152,7 +180,13 @@ func (s *SQLOps) Update(values ...interface{}) error {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	result, err := s.Db.Exec(query, queryValues...)
+	stmt, err := s.Db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(queryValues...)
 	if err != nil {
 		return err
 	}
@@ -182,28 +216,28 @@ func (s *SQLOps) GetComposition() *CompositionOps {
 }
 
 func (s *SQLOps) dealWithRelationships() {
-	return
-	//deepOptions := s.optionsOps
-	//deepOptions.IncreaseCurrentLevel()
+	//return
+	deepOptions := s.optionsOps
+	deepOptions.IncreaseCurrentLevel()
 
 	//In this case, we're checking if the level of the options
 	//we're passing down the rabbit hole is still valid
-	//if deepOptions.CheckIfCurrentLevelBiggerThanMaxLevel() {
-	//	return
-	//}
+	if deepOptions.CheckIfCurrentLevelBiggerThanMaxLevel() {
+		return
+	}
 
 	//Creating new relationship collection_of_attributes
-	//s.relationships = NewRelationshipOps(s.Object, deepOptions)
+	s.relationships = NewRelationshipOps(s.Object, deepOptions)
 
 	//Method below checks if the current collection_of_attributes has got relationships
-	//s.relationships.checkForRelationships()
+	s.relationships.checkForRelationships()
 
 	//Deep query deactivated
 	//if s.relationships.hasOne.RelatedFieldsPresent() {
 	//	s.relationships.fetchHasOneRelatedObjects()
 	//}
 
-	//if s.relationships.hasMany.RelatedFieldsPresent() {
-	//	s.relationships.fetchHasManyRelatedObjects()
-	//}
+	if s.relationships.hasMany.RelatedFieldsPresent() {
+		s.relationships.fetchHasManyRelatedObjects()
+	}
 }
