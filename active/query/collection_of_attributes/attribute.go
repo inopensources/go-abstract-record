@@ -63,17 +63,17 @@ func (a *Attribute) RelTagPresent() bool {
 }
 
 func (a *Attribute) AddrInterface() interface{} {
-	if a.Options.CheckIfCustomFieldsAreFromThisTable(a.Table) && a.Options.QueryCustomFieldsPresent() {
-		if a.Options.FieldsPresentInQueryCustomFields(a.Table, a.StructField.Name) {
-			return a.ValueOf.Addr().Interface()
-		}
-
-		return nil
-	}
-
-	if !a.RelTagPresent() {
+	//if a.Options.CheckIfCustomFieldsAreFromThisTable(a.Table) && a.Options.QueryCustomFieldsPresent() {
+	//	if a.Options.FieldsPresentInQueryCustomFields(a.Table, a.StructField.Name) {
+	//		return a.ValueOf.Addr().Interface()
+	//	}
+	//
+	//	return nil
+	//}
+	//
+	//if !a.RelTagPresent() {
 		return a.ValueOf.Addr().Interface()
-	}
+	//}
 
-	return nil
+	//return nil
 }

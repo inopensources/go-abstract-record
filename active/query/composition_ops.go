@@ -23,13 +23,7 @@ func NewCompositionOps(object interface{}, extraOptions ...interface{}) *Composi
 }
 
 func (c *CompositionOps) Select(values ...interface{}) (query string, pointerList []interface{}) {
-	if c.options.CheckIfCustomFieldsAreFromThisTable(c.CollectionOfAttributes.Table) {
-		if c.options.QueryCustomFieldsPresent() {
-			c.composer.Selec.AddColumn(c.options.QueryCustomFieldsAsSlice(c.CollectionOfAttributes.Table)...)
-		}
-	} else {
-		c.composer.Selec.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNamesForSelect()...)
-	}
+	c.composer.Selec.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNamesForSelect()...)
 
 	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
 
@@ -82,7 +76,7 @@ func (c *CompositionOps) Delete() (query string, pointerList []interface{}) {
 	c.composer.Delete.Call()
 	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
 
-	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForDelete ()...)
+	c.composer.Where.AddCondition(c.CollectionOfAttributes.AttributesAsColumnNamesForDelete()...)
 
 	for _, colName := range c.CollectionOfAttributes.AttributesAsColumnNamesForInsert() {
 		c.composer.Where.AddValues(c.CollectionOfAttributes.AttributeValueFromColumnName(colName))

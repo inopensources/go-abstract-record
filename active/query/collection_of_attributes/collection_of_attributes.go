@@ -132,10 +132,14 @@ func (a *CollectionOfAttributes) AttributeValuesAsArray() (sliceOfValues []inter
 func (a *CollectionOfAttributes) AttributesAsColumnNamesForSelect() (columns []string) {
 	for _, attribute := range a.CollectionOfAttributes {
 		if garTag := attribute.GarTag(); garTag != "" {
-			if a.options.Inner {
+			if a.options.FieldsPresentInQueryCustomFields(attribute.Table, attribute.GarTag()) {
 				columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
 			} else {
-				columns = append(columns, garTag)
+				if a.options.Inner {
+					columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
+				} else {
+					columns = append(columns, garTag)
+				}
 			}
 		}
 	}

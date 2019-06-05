@@ -101,7 +101,9 @@ func (s *SQLOps) Where(values ...interface{}) error {
 	resultCount := 0
 
 	for rows.Next() {
-		err := rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributes()...)
+		colNames, err := rows.Columns()
+
+		err = rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributesFromColumnNames(colNames...)...)
 		if err != nil {
 			fmt.Println(err)
 		}
