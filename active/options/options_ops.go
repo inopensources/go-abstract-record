@@ -9,6 +9,7 @@ const DeepQuery = 0
 const MaxLevel = 1
 const CurrentLevel = 2
 const QueryCustomFields = 3
+const Inner = 4
 
 type OptionsOps struct {
 	// True: Every collection_of_attributes is rendered with all of its relationships
@@ -17,6 +18,7 @@ type OptionsOps struct {
 	MaxLevel          int
 	CurrentLevel      int
 	QueryCustomFields helpers.Limit
+	Inner             bool
 }
 
 //Using variadic functions here, as it would be a bummer to pass
@@ -34,6 +36,7 @@ func NewOptionsOps(extraOptions ...interface{}) OptionsOps {
 		CurrentLevel:      0,
 		MaxLevel:          1,
 		QueryCustomFields: helpers.NewLimit(),
+		Inner:             false,
 	}
 }
 
@@ -44,6 +47,7 @@ func OptionOpsFromExtraOptions(extraOptions ...interface{}) OptionsOps {
 	newOptionOps.setMaxLevelFromInterface(extraOptions)
 	newOptionOps.setCurrentLevelFromInterface(extraOptions)
 	newOptionOps.setQueryCustomFieldsFromInterface(extraOptions)
+	newOptionOps.setInner(extraOptions)
 
 	return newOptionOps
 }
@@ -72,6 +76,12 @@ func (o *OptionsOps) setQueryCustomFieldsFromInterface(extraOptions []interface{
 	}
 }
 
+func (o *OptionsOps) setInner(extraOptions []interface{}) {
+	if o.validDepth(Inner, extraOptions) {
+		o.Inner = extraOptions[Inner].(bool)
+	}
+}
+
 func (o *OptionsOps) validDepth(level int, extraOptions []interface{}) bool {
 	if len(extraOptions) > level {
 		return true
@@ -97,6 +107,14 @@ func (o *OptionsOps) GetOptionsAsArrayOfValues() (optionsAsValues []reflect.Valu
 	}
 
 	return optionsAsValues
+}
+
+func (o *OptionsOps) GetOptionsAsSliceOfInterface() (optionsAsInterface []interface{}) {
+	for _, value := range o.getOptionsAsArray() {
+		optionsAsInterface = append(optionsAsInterface, reflect.ValueOf(value).Interface())
+	}
+
+	return optionsAsInterface
 }
 
 func (o *OptionsOps) IncreaseCurrentLevel() {

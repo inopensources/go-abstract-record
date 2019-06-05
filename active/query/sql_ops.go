@@ -14,7 +14,7 @@ type SQLOps struct {
 	Object        interface{}
 	ObjectArray   interface{}
 	Db            *sql.DB
-	optionsOps    options.OptionsOps
+	OptionsOps    options.OptionsOps
 }
 
 func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOptions ...interface{}) *SQLOps {
@@ -23,7 +23,7 @@ func NewSQLOps(object interface{}, objectArray interface{}, db *sql.DB, extraOpt
 	sqlOps.Object = object
 	sqlOps.ObjectArray = objectArray
 	sqlOps.Db = db
-	sqlOps.optionsOps = options.NewOptionsOps(extraOptions...)
+	sqlOps.OptionsOps = options.NewOptionsOps(extraOptions...)
 
 	return &sqlOps
 }
@@ -49,7 +49,6 @@ func (s *SQLOps) Select(values ...interface{}) error {
 
 	resultCount := 0
 	for rows.Next() {
-		//fmt.Print(rows.Columns())
 		colNames, err := rows.Columns()
 
 		err = rows.Scan(s.composition.CollectionOfAttributes.PointersToAttributesFromColumnNames(colNames...)...)
@@ -70,9 +69,9 @@ func (s *SQLOps) Select(values ...interface{}) error {
 
 	//If DeepQuery is set to true, the relationships are
 	//going to be eager loaded until MaxLevel is reached
-	if s.optionsOps.DeepQuery {
+	if s.OptionsOps.DeepQuery {
 		//Method below checks if we're already too deep into the relationship /:
-		if !s.optionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
+		if !s.OptionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
 			s.dealWithRelationships()
 		}
 	}
@@ -111,9 +110,9 @@ func (s *SQLOps) Where(values ...interface{}) error {
 		//going to be loaded
 		//ATTENTION: This may slowdown your query, as a new SQL
 		//query will be created for every parent collection_of_attributes returned
-		if s.optionsOps.DeepQuery {
+		if s.OptionsOps.DeepQuery {
 			//Method below checks if we're already too deep into the relationship /:
-			if !s.optionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
+			if !s.OptionsOps.CheckIfCurrentLevelBiggerThanMaxLevel() {
 				s.dealWithRelationships()
 			}
 		}
@@ -217,7 +216,7 @@ func (s *SQLOps) GetComposition() *CompositionOps {
 
 func (s *SQLOps) dealWithRelationships() {
 	//return
-	deepOptions := s.optionsOps
+	deepOptions := s.OptionsOps
 	deepOptions.IncreaseCurrentLevel()
 
 	//In this case, we're checking if the level of the options

@@ -29,13 +29,11 @@ func (e *AbstractRecord) All() error {
 	return e.abstractOps.All()
 }
 
-
 func (e *AbstractRecord) Count() (int, error) {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
 
 	return e.abstractOps.Count()
 }
-
 
 func (e *AbstractRecord) Find(values ...interface{}) error {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
@@ -79,6 +77,19 @@ func (e *AbstractRecord) Paginate(pk string, offset, pageSize int) *AbstractReco
 		e.abstractOps.SqlOps.GetComposition().GetComposer().PostQuery.AddPostQuery(query)
 		e.abstractOps.SqlOps.GetComposition().GetComposer().PostQuery.AddValues(values...)
 	}
+
+	return e
+}
+
+func (e *AbstractRecord) Inner() *AbstractRecord {
+	options := e.abstractOps.SqlOps.OptionsOps
+	object := e.abstractOps.SqlOps.Object
+	objectArray := e.abstractOps.SqlOps.ObjectArray
+	db := e.abstractOps.SqlOps.Db
+
+	options.Inner = true
+
+	e.abstractOps.Prepare(object, objectArray, db, options.GetOptionsAsSliceOfInterface()...)
 
 	return e
 }

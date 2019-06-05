@@ -33,7 +33,7 @@ func (c *CompositionOps) Select(values ...interface{}) (query string, pointerLis
 
 	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
 
-	if c.CollectionOfAttributes.InnerJoinPresent() {
+	if c.options.Inner {
 		c.composer.Join.SetParentTable(c.CollectionOfAttributes.Table)
 		c.composer.Join.SetChildTables(c.CollectionOfAttributes.TableChild...)
 	}

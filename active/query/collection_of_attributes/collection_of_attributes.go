@@ -30,7 +30,6 @@ func NewCollectionOfAttributes(object interface{}, extraOptions ...interface{}) 
 
 func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{}, extraOptions ...interface{}) {
 	objectInterface := relationships.NewObjectInterface(object)
-	//fmt.Print(objectInterface)
 
 	value := reflect.ValueOf(object).Elem()
 	typeOfT := value.Type()
@@ -45,7 +44,7 @@ func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{},
 			return
 		}
 
-		if a.options.DeepQuery {
+		if a.options.Inner {
 			if _, present := typeOfT.Field(i).Tag.Lookup("rel"); present {
 				//Instantiate a new object from a nil related pointer
 				maNew := objectInterface.NewObjectFromFieldNameType(typeOfT.Field(i).Name)
@@ -78,9 +77,6 @@ func (a *CollectionOfAttributes) PointersToAttributes() (pointerList []interface
 
 func (a *CollectionOfAttributes) PointersToAttributesFromColumnNames(columnNames ...string) (pointerList []interface{}) {
 	for _, columnName := range columnNames {
-		//v := a.FilterByColumnName(columnName)
-		//fmt.Print(v)
-		//pointerList = append(pointerList, a.AttributeFromColumnName(columnName))
 		pointerList = append(pointerList, a.FilterByColumnName(columnName))
 	}
 
@@ -136,7 +132,11 @@ func (a *CollectionOfAttributes) AttributeValuesAsArray() (sliceOfValues []inter
 func (a *CollectionOfAttributes) AttributesAsColumnNamesForSelect() (columns []string) {
 	for _, attribute := range a.CollectionOfAttributes {
 		if garTag := attribute.GarTag(); garTag != "" {
-			columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
+			if a.options.Inner {
+				columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
+			} else {
+				columns = append(columns, garTag)
+			}
 		}
 	}
 
@@ -201,8 +201,11 @@ func (a *CollectionOfAttributes) Conditions(values ...interface{}) (conditions [
 
 	for i, condition := range values {
 		if i%2 == 0 {
-			//conditions = append(conditions, fmt.Sprintf("dmd.dbo.%s.%s", a.Table, condition))
-			conditions = append(conditions, fmt.Sprintf("%s.%s", a.Table, condition))
+			if a.options.Inner {
+				conditions = append(conditions, fmt.Sprintf("%s.%s", a.Table, condition))
+			} else {
+				conditions = append(conditions, fmt.Sprintf("%s", condition))
+			}
 		} else {
 			queryValues = append(queryValues, condition)
 		}
@@ -212,6 +215,14 @@ func (a *CollectionOfAttributes) Conditions(values ...interface{}) (conditions [
 }
 
 func (a *CollectionOfAttributes) FilterByColumnName(baseName string) (pointerToAttribute interface{}) {
+	if a.options.Inner {
+		return a.FilterForInner(baseName)
+	}
+
+	return a.FilterNormal(baseName)
+}
+
+func (a *CollectionOfAttributes) FilterForInner(baseName string) (pointerToAttribute interface{}) {
 	tableAndColumn := strings.Split(baseName, ".")
 
 	table := tableAndColumn[0]
@@ -223,6 +234,21 @@ func (a *CollectionOfAttributes) FilterByColumnName(baseName string) (pointerToA
 				if addrInterface := attribute.AddrInterface(); addrInterface != nil {
 					return addrInterface
 				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (a *CollectionOfAttributes) FilterNormal(baseName string) (pointerToAttribute interface{}) {
+	tableAndColumn := strings.Split(baseName, ".")
+	columnName := tableAndColumn[0]
+
+	for _, attribute := range a.CollectionOfAttributes {
+		if attribute.GarTag() == columnName {
+			if addrInterface := attribute.AddrInterface(); addrInterface != nil {
+				return addrInterface
 			}
 		}
 	}
