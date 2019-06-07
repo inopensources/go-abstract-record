@@ -2,6 +2,7 @@ package query
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/infarmasistemas/go-abstract-record/active/options"
@@ -119,9 +120,15 @@ func (s *SQLOps) Where(values ...interface{}) error {
 			}
 		}
 
+		// Improve this
+		objType := reflect.TypeOf(s.Object).Elem()
+		newObj := reflect.New(objType)
+		jsonOld, err := json.Marshal(s.Object)
+		json.Unmarshal(jsonOld, newObj.Interface())
+
 		valuePtr := reflect.ValueOf(s.ObjectArray)
 		value := valuePtr.Elem()
-		value.Set(reflect.Append(value, reflect.ValueOf(s.Object).Elem()))
+		value.Set(reflect.Append(value, newObj.Elem()))
 
 		resultCount++
 	}
