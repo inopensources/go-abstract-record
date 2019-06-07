@@ -29,6 +29,8 @@ func NewCollectionOfAttributes(object interface{}, extraOptions ...interface{}) 
 }
 
 func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{}, extraOptions ...interface{}) {
+	currOptions := options.NewOptionsOps(extraOptions...)
+
 	objectInterface := relationships.NewObjectInterface(object)
 
 	value := reflect.ValueOf(object).Elem()
@@ -40,16 +42,19 @@ func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{},
 	for i := 0; i < value.NumField(); i++ {
 		attributes = append(attributes, NewAttribute(table, value.Field(i), typeOfT.Field(i), extraOptions...))
 
-		if a.options.CheckIfCurrentLevelBiggerThanMaxLevel() {
-			return
-		}
-
-		if a.options.Inner {
+		if currOptions.Inner {
 			if _, present := typeOfT.Field(i).Tag.Lookup("rel"); present {
 				//Instantiate a new object from a nil related pointer
 				maNew := objectInterface.NewObjectFromFieldNameType(typeOfT.Field(i).Name)
 
 				tableChild := maNew.Elem().Type().Name()
+
+				//Limiting how deep in the rabbit hole you can go
+				newOptions := currOptions
+				newOptions.IncreaseCurrentLevel()
+				if newOptions.CheckIfCurrentLevelBiggerThanMaxLevel() {
+					return
+				}
 
 				a.TableChild = append(a.TableChild, NewTablePkFk(a.Table, tableChild, typeOfT.Field(i)))
 
@@ -57,7 +62,7 @@ func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{},
 				objectInterface.SetFieldValueByName(typeOfT.Field(i).Name, maNew)
 
 				//Pass those values down the rabbit hole to inspect and collect
-				a.InspectAndCollectAttributes(maNew.Interface(), extraOptions...)
+				a.InspectAndCollectAttributes(maNew.Interface(), newOptions.GetOptionsAsSliceOfInterface()...)
 			}
 		}
 	}
