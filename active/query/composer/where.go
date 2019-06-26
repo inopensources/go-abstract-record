@@ -48,8 +48,13 @@ func (w *Where) Build() string {
 	for index, condition := range w.conditions {
 		sb.WriteString(condition)
 
-		if index == (len(w.conditions) - 1) {
+		if w.indexSecondToLast(index) {
 			if w.objectValuesPresent() {
+				if w.containsLike(condition) {
+					sb.WriteString(" ?")
+					break
+				}
+
 				sb.WriteString(w.objectValues[index].ReturnSQL())
 			} else {
 				sb.WriteString(" = ?")
@@ -58,7 +63,11 @@ func (w *Where) Build() string {
 		}
 
 		if w.objectValuesPresent() {
-			sb.WriteString(w.objectValues[index].ReturnSQL())
+			if w.containsLike(condition) {
+				sb.WriteString(" ?")
+			} else {
+				sb.WriteString(w.objectValues[index].ReturnSQL())
+			}
 		} else {
 			sb.WriteString(" = ?")
 		}
@@ -88,4 +97,20 @@ func (w *Where) getValues() []interface{} {
 	}
 
 	return values
+}
+
+func (w *Where) containsLike(condition string) bool {
+	if strings.HasSuffix(condition, " LIKE") {
+		return true
+	}
+
+	return false
+}
+
+func (w *Where) indexSecondToLast(index int) bool {
+	if index == (len(w.conditions) - 1) {
+		return true
+	}
+
+	return false
 }
