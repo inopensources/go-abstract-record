@@ -35,6 +35,13 @@ func (e *AbstractRecord) Count() (int, error) {
 	return e.abstractOps.Count()
 }
 
+func (e *AbstractRecord) Max(value interface{}) (int, error) {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
+	return e.abstractOps.Max(value)
+}
+
+
 func (e *AbstractRecord) Find(values ...interface{}) error {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
 

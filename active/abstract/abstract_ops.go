@@ -21,6 +21,10 @@ func (d *AbstractOps) Count(values ...interface{}) (int, error) {
 	return d.SqlOps.Count(values...)
 }
 
+func (d *AbstractOps) Max(value interface{}) (int, error) {
+	return d.SqlOps.Max(value)
+}
+
 func (d *AbstractOps) Find(values ...interface{}) error {
 	return d.SqlOps.Select(values...)
 }

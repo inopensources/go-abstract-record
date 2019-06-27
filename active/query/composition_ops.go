@@ -61,6 +61,14 @@ func (c *CompositionOps) Count(values ...interface{}) (query string, pointerList
 	return c.composer.BuildQuery()
 }
 
+func (c *CompositionOps) Max(value interface{}) (query string, pointerList []interface{}) {
+	c.composer.Max.AddColumn(value)
+
+	c.composer.From.AddTableName(fmt.Sprintf("%s", c.CollectionOfAttributes.Table))
+
+	return c.composer.BuildQuery()
+}
+
 func (c *CompositionOps) Insert() (query string, pointerList []interface{}) {
 	c.composer.Insert.AddColumn(c.CollectionOfAttributes.AttributesAsColumnNamesForInsert()...)
 	c.composer.Insert.AddTableName(fmt.Sprintf("%s ", c.CollectionOfAttributes.Table))

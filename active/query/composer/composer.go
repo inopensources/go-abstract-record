@@ -9,6 +9,7 @@ type Composer struct {
 	Count     Count
 	Update    Update
 	Delete    Delete
+	Max       Max
 	From      From
 	Join      Join
 	Set       Set
@@ -24,6 +25,7 @@ func NewComposer() Composer {
 	composer.Insert = NewInsert()
 	composer.Update = NewUpdate()
 	composer.Delete = NewDelete()
+	composer.Max = NewMax()
 
 	composer.From = NewFrom()
 	composer.Join = NewJoin()
@@ -52,6 +54,10 @@ func (c *Composer) BuildQuery() (string, []interface{}) {
 
 	if c.Delete.Valid() {
 		sb.WriteString(c.Delete.Build())
+	}
+
+	if c.Max.Valid() {
+		sb.WriteString(c.Max.Build())
 	}
 
 	if c.From.Valid() {

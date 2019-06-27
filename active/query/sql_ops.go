@@ -219,6 +219,22 @@ func (s *SQLOps) Count(values ...interface{}) (int, error) {
 	return count, err
 }
 
+
+func (s *SQLOps) Max(values interface{}) (int, error) {
+	var count int
+	query, queryValues := s.composition.Max(values)
+
+	fmt.Println("QUERY:", query)
+	fmt.Println("VALUES:", queryValues)
+
+	rows := s.Db.QueryRow(query)
+
+	err := rows.Scan(&count)
+
+	return count, err
+}
+
+
 func (s *SQLOps) GetComposition() *CompositionOps {
 	return &s.composition
 }
