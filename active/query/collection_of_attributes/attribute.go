@@ -72,8 +72,12 @@ func (a *Attribute) AddrInterface() interface{} {
 	//}
 	//
 	//if !a.RelTagPresent() {
-		return a.ValueOf.Addr().Interface()
+	return a.ValueOf.Addr().Interface()
 	//}
 
 	//return nil
+}
+
+func (a *Attribute) DefaultValue() (string, bool) {
+	return a.StructField.Tag.Lookup("default_value")
 }

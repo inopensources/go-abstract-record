@@ -103,8 +103,18 @@ func (a *CollectionOfAttributes) AttributeFromColumnName(columnName string) (poi
 func (a *CollectionOfAttributes) AttributeValueFromColumnName(columnName string) (attributeValue interface{}) {
 	for _, attribute := range a.CollectionOfAttributes {
 		if !attribute.RelTagPresent() && attribute.garTagWithoutLimits() == columnName {
+			//If the supplied value for this attribute is valid
+			// and interfaceable, it means it can be written to
+			// the attribute
 			if value, err := attribute.Interface(); err == nil {
 				attributeValue = value
+			} else {
+				// If the attribute value is null and the user user has set
+				// a default_value tag for this attribute, said default_value
+				// will be set as the value for this attribute.
+				if value, presence := attribute.DefaultValue(); presence == true {
+					attributeValue = value
+				}
 			}
 		}
 	}
