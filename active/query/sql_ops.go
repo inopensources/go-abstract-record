@@ -212,13 +212,12 @@ func (s *SQLOps) Count(values ...interface{}) (int, error) {
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	rows := s.Db.QueryRow(query)
+	rows := s.Db.QueryRow(query, queryValues...)
 
 	err := rows.Scan(&count)
 
 	return count, err
 }
-
 
 func (s *SQLOps) Max(values interface{}) (int, error) {
 	var count int
@@ -233,7 +232,6 @@ func (s *SQLOps) Max(values interface{}) (int, error) {
 
 	return count, err
 }
-
 
 func (s *SQLOps) GetComposition() *CompositionOps {
 	return &s.composition

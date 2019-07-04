@@ -29,10 +29,10 @@ func (e *AbstractRecord) All() error {
 	return e.abstractOps.All()
 }
 
-func (e *AbstractRecord) Count() (int, error) {
+func (e *AbstractRecord) Count(values ...interface{}) (int, error) {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
 
-	return e.abstractOps.Count()
+	return e.abstractOps.Count(values...)
 }
 
 func (e *AbstractRecord) Max(value interface{}) (int, error) {
