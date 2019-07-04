@@ -233,6 +233,58 @@ func (s *SQLOps) Max(values interface{}) (int, error) {
 	return count, err
 }
 
+func (s *SQLOps) SQL(sqlQuery string, values ...interface{}) ([]map[string]interface{}, error) {
+	returnedValues := make([]map[string]interface{}, 0)
+
+	fmt.Println("QUERY:", sqlQuery)
+	fmt.Println("VALUES:", values)
+
+	stmt, err := s.Db.Prepare(sqlQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(values...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	resultCount := 0
+	for rows.Next() {
+		rowMap := make(map[string]interface{})
+
+		cols, err := rows.Columns()
+
+		columns := make([]interface{}, len(cols))
+		columnPointers := make([]interface{}, len(cols))
+		for i := range columns {
+			columnPointers[i] = &columns[i]
+		}
+
+		if err := rows.Scan(columnPointers...); err != nil {
+			return nil, err
+		}
+
+		for i, colName := range cols {
+			val := columnPointers[i].(*interface{})
+			rowMap[colName] = *val
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		returnedValues = append(returnedValues, rowMap)
+
+		resultCount++
+	}
+
+	return returnedValues, err
+}
+
 func (s *SQLOps) GetComposition() *CompositionOps {
 	return &s.composition
 }

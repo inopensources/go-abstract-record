@@ -45,3 +45,7 @@ func (d *AbstractOps) Delete(values ...interface{}) error {
 	return d.SqlOps.Delete()
 }
 
+func (d *AbstractOps) SQL(sqlQuery string, values...interface{}) ([]map[string]interface{}, error) {
+	return d.SqlOps.SQL(sqlQuery, values...)
+}
+

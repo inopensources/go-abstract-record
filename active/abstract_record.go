@@ -100,3 +100,8 @@ func (e *AbstractRecord) Inner() *AbstractRecord {
 
 	return e
 }
+
+
+func (e *AbstractRecord) SQL(sqlQuery string, values ...interface{}) ([]map[string]interface{}, error) {
+	return e.abstractOps.SQL(sqlQuery, values...)
+}
