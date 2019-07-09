@@ -1,9 +1,11 @@
 package collection_of_attributes
 
 import (
+	"fmt"
 	"github.com/infarmasistemas/go-abstract-record/active/options"
 	"github.com/kataras/iris/core/errors"
 	"reflect"
+	"strconv"
 )
 
 type Attribute struct {
@@ -80,4 +82,119 @@ func (a *Attribute) AddrInterface() interface{} {
 
 func (a *Attribute) DefaultValue() (string, bool) {
 	return a.StructField.Tag.Lookup("default_value")
+}
+
+func (a *Attribute) SetValueWithReflection(someValue interface{}) {
+	reflectedValue := reflect.ValueOf(someValue)
+	pt := reflect.PtrTo(reflectedValue.Type()) // create a *T type.
+	pv := reflect.New(pt.Elem())               // create a reflect.Value of type *T.
+	pv.Elem().Set(reflectedValue)              // sets pv to point to underlying value of v.
+
+	a.ValueOf.Set(pv)
+}
+
+func (a *Attribute) TryToParseDefaultValueAndSetDefault() error {
+	switch a.ValueOf.Type().String() {
+	case "*string":
+		return a.tryToParseDefaultValueAsStringAndSetValueWithReflection()
+	case "*bool":
+		return a.tryToParseDefaultValueAsBoolAndSetValueWithReflection()
+	case "*float32":
+		return a.tryToParseDefaultValueAsFloat32AndSetValueWithReflection()
+	case "*float64":
+		return a.tryToParseDefaultValueAsFloat64AndSetValueWithReflection()
+	case "*int":
+		return a.tryToParseDefaultValueAsIntAndSetValueWithReflection()
+	case "*int32":
+		return a.tryToParseDefaultValueAsInt32AndSetValueWithReflection()
+	case "*int64":
+		return a.tryToParseDefaultValueAsInt64AndSetValueWithReflection()
+	default:
+		return errors.New(fmt.Sprintf("Cannot deal with type %s. It can be added by request.", a.ValueOf.Type().String()))
+	}
+}
+
+func (a *Attribute) tryToParseDefaultValueAsStringAndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+	a.SetValueWithReflection(defaultValue)
+
+	return nil
+}
+
+func (a *Attribute) tryToParseDefaultValueAsBoolAndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+
+	val, err := strconv.ParseBool(defaultValue)
+	if err != nil {
+		return err
+	}
+
+	a.SetValueWithReflection(val)
+
+	return nil
+}
+
+func (a *Attribute) tryToParseDefaultValueAsFloat32AndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+
+	val, err := strconv.ParseFloat(defaultValue, 4)
+	if err != nil {
+		return err
+	}
+
+	a.SetValueWithReflection(float32(val))
+
+	return nil
+}
+
+func (a *Attribute) tryToParseDefaultValueAsFloat64AndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+
+	val, err := strconv.ParseFloat(defaultValue, 4)
+	if err != nil {
+		return err
+	}
+
+	a.SetValueWithReflection(val)
+
+	return nil
+}
+
+func (a *Attribute) tryToParseDefaultValueAsIntAndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+
+	val, err := strconv.ParseInt(defaultValue, 10, 4)
+	if err != nil {
+		return err
+	}
+
+	a.SetValueWithReflection(int(val))
+
+	return nil
+}
+
+func (a *Attribute) tryToParseDefaultValueAsInt32AndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+
+	val, err := strconv.ParseInt(defaultValue, 10, 4)
+	if err != nil {
+		return err
+	}
+
+	a.SetValueWithReflection(int32(val))
+
+	return nil
+}
+
+func (a *Attribute) tryToParseDefaultValueAsInt64AndSetValueWithReflection() error {
+	defaultValue, _ := a.DefaultValue()
+
+	val, err := strconv.ParseInt(defaultValue, 10, 4)
+	if err != nil {
+		return err
+	}
+
+	a.SetValueWithReflection(int64(val))
+
+	return nil
 }

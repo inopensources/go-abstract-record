@@ -41,7 +41,6 @@ func (e *AbstractRecord) Max(value interface{}) (int, error) {
 	return e.abstractOps.Max(value)
 }
 
-
 func (e *AbstractRecord) Find(values ...interface{}) error {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
 
@@ -58,6 +57,12 @@ func (e *AbstractRecord) New(values ...interface{}) error {
 	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
 
 	return e.checkOps.TreatEntry(e.instanceOps.NewSingle, e.instanceOps.NewArray, values...)
+}
+
+func (e *AbstractRecord) NewWithDefaults(values ...interface{}) error {
+	defer logger.NewLogger().Info("SHUTTING OFF ENGINES")
+
+	return e.instanceOps.NewWithDefaults()
 }
 
 func (e *AbstractRecord) Save() error {
@@ -100,7 +105,6 @@ func (e *AbstractRecord) Inner() *AbstractRecord {
 
 	return e
 }
-
 
 func (e *AbstractRecord) SQL(sqlQuery string, values ...interface{}) ([]map[string]interface{}, error) {
 	return e.abstractOps.SQL(sqlQuery, values...)

@@ -274,3 +274,35 @@ func (a *CollectionOfAttributes) FilterNormal(baseName string) (pointerToAttribu
 
 	return nil
 }
+
+func (a *CollectionOfAttributes) CollectAttributesWithDefaultValues() (attributes []Attribute) {
+	for _, attribute := range a.CollectionOfAttributes {
+		if _, present := attribute.DefaultValue(); present {
+			attributes = append(attributes, attribute)
+		}
+	}
+
+	return attributes
+}
+
+func (a *CollectionOfAttributes) AttributeByName(attributeName string) (bool, Attribute) {
+	for _, attributeValue := range a.CollectionOfAttributes {
+		if attributeValue.JSONTag() == attributeName {
+			return true, attributeValue
+		}
+	}
+
+	return false, Attribute{}
+}
+
+func (a *CollectionOfAttributes) SetDefaultValues() error {
+	attributesWithDefaultValues := a.CollectAttributesWithDefaultValues()
+	for _, attributeWithDefaultValue := range attributesWithDefaultValues {
+		err := attributeWithDefaultValue.TryToParseDefaultValueAndSetDefault()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

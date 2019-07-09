@@ -48,14 +48,10 @@ func (a *CheckOps) TreatEntry(functionSingle func(json []byte) error, functionMu
 		return errors.New(fmt.Sprintf("Can't deal with pure sql %s", values))
 	}
 
-	if values == nil {
-		return nil
-	}
-
 	return functionSingle([]byte(fmt.Sprintf("%s", values[0])))
 }
 
-func (a *CheckOps) TreatValuesForUpdate(fn func (fnValues ...interface{}) error, values ...interface{}) error {
+func (a *CheckOps) TreatValuesForUpdate(fn func(fnValues ...interface{}) error, values ...interface{}) error {
 	vls, err := json_ops.New(values[0]).GetBodyAsValues()
 	if err != nil {
 		return err
