@@ -220,17 +220,21 @@ func (s *SQLOps) Count(values ...interface{}) (int, error) {
 }
 
 func (s *SQLOps) Max(values interface{}) (int, error) {
-	var count int
+	var count sql.NullInt64
+	//var securityCheck interface{}
+
 	query, queryValues := s.composition.Max(values)
 
 	fmt.Println("QUERY:", query)
 	fmt.Println("VALUES:", queryValues)
 
-	rows := s.Db.QueryRow(query)
+	row := s.Db.QueryRow(query)
+	err := row.Scan(&count)
+	if err == nil {
+		return int(count.Int64), err
+	}
 
-	err := rows.Scan(&count)
-
-	return count, err
+	return int(count.Int64), errors.New(fmt.Sprintf("%s %v", "Unknown error", err))
 }
 
 func (s *SQLOps) SQL(sqlQuery string, values ...interface{}) ([]map[string]interface{}, error) {
