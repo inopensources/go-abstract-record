@@ -56,6 +56,21 @@ func (a *CollectionOfAttributes) InspectAndCollectAttributes(object interface{},
 					return
 				}
 
+				//If there are custom fields
+				if a.options.QueryCustomFieldsPresent() {
+					//And this relationship table is contained in the custom field list
+					if a.options.CheckIfCustomFieldsAreFromThisTable(tableChild) {
+						a.TableChild = append(a.TableChild, NewTablePkFk(a.Table, tableChild, typeOfT.Field(i)))
+
+						//Writing that instantiated object to the object being handled
+						objectInterface.SetFieldValueByName(typeOfT.Field(i).Name, maNew)
+
+						//Pass those values down the rabbit hole to inspect and collect
+						a.InspectAndCollectAttributes(maNew.Interface(), newOptions.GetOptionsAsSliceOfInterface()...)
+					}
+					continue
+				}
+
 				a.TableChild = append(a.TableChild, NewTablePkFk(a.Table, tableChild, typeOfT.Field(i)))
 
 				//Writing that instantiated object to the object being handled
