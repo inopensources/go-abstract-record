@@ -151,7 +151,13 @@ func (a *CollectionOfAttributes) AttributesAsColumnNamesForSelect() (columns []s
 				columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
 			} else {
 				if a.options.Inner {
-					columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
+					if a.options.QueryCustomFieldsPresent() {
+						if a.options.FieldsPresentInQueryCustomFields(attribute.Table, garTag) {
+							columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
+						}
+					} else {
+						columns = append(columns, attribute.Table+"."+garTag+" as ["+attribute.Table+"."+garTag+"]")
+					}
 				} else {
 					columns = append(columns, garTag)
 				}
